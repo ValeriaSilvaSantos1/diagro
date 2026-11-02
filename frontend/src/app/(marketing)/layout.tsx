@@ -1,3 +1,4 @@
+import Footer from "./_components/Footer";
 import Header from "./_components/Header";
 
 export default function MarketingLayout({ children }: LayoutProps<"/">) {
@@ -5,6 +6,7 @@ export default function MarketingLayout({ children }: LayoutProps<"/">) {
     <div className="flex flex-1 flex-col">
       <Header />
       {children}
+      <Footer />
     </div>
   );
 }

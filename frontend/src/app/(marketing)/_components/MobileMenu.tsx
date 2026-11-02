@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
 import { cn } from "cn";
 
+import Logo from "@/components/layout/Logo";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,9 +15,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { routes } from "@/lib/routes";
+import type { NavLink } from "@/types/navigation";
 
 type MobileMenuProps = {
-  links: { name: string; href: string }[];
+  links: NavLink[];
 };
 
 export default function MobileMenu({ links }: MobileMenuProps) {
@@ -39,13 +41,7 @@ export default function MobileMenu({ links }: MobileMenuProps) {
       >
         <SheetHeader className="flex-row items-center justify-between border-b px-6 py-4">
           <SheetTitle>
-            <Image
-              src="/images/landing/logo_Diagro.svg"
-              alt="Logo Diagro"
-              width={1980}
-              height={520}
-              className="h-auto w-28"
-            />
+            <Logo />
           </SheetTitle>
           <SheetClose render={<Button variant="ghost" size="icon-lg" />}>
             <XIcon className="size-6" />
@@ -60,7 +56,7 @@ export default function MobileMenu({ links }: MobileMenuProps) {
                 <Link
                   href={link.href}
                   onClick={() => setOpen(false)}
-                  className="block py-3 text-base font-medium text-gray-800"
+                  className="block py-3 text-base font-medium text-ink"
                 >
                   {link.name}
                 </Link>
@@ -71,7 +67,7 @@ export default function MobileMenu({ links }: MobileMenuProps) {
 
         <div className="grid grid-cols-2 gap-3 px-6 pt-2 pb-6">
           <Link
-            href="/login"
+            href={routes.login}
             onClick={() => setOpen(false)}
             className={cn(
               buttonVariants({ variant: "outline", size: "lg" }),
@@ -81,11 +77,11 @@ export default function MobileMenu({ links }: MobileMenuProps) {
             Entrar
           </Link>
           <Link
-            href="/cadastro"
+            href={routes.signup}
             onClick={() => setOpen(false)}
             className={cn(
               buttonVariants({ size: "lg" }),
-              "h-11 text-base font-semibold shadow-md"
+              "h-11 text-base"
             )}
           >
             Começar agora
