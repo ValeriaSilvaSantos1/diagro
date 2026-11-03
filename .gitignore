@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -220,4 +221,4 @@ __marimo__/
 .streamlit/secrets.toml
 
 .vscode/
-.idea/
+.idea/local.env
