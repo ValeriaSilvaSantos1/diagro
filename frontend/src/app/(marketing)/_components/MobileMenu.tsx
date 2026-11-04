@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { MenuIcon, XIcon } from "lucide-react";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 import Logo from "@/components/layout/Logo";
 import { Button, buttonVariants } from "@/components/ui/button";

@@ -3,6 +3,8 @@ import { ShieldCheck } from 'lucide-react'
 import { Logo } from '@/components/layout/BrandLogo'
 import { photo } from '@/lib/demo/images'
 
+export const instant = false
+
 export default function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen bg-white lg:grid-cols-[1fr_1fr]">

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CircleCheck, ScanSearch } from "lucide-react";
-import { cn } from "cn";
+import { cn } from "@/lib/utils";
 
 import { buttonVariants } from "@/components/ui/button";
 import { routes } from "@/lib/routes";

@@ -91,24 +91,6 @@ export default function Login() {
           Criar conta
         </Link>
       </p>
-
-      <div className="mt-10 rounded-xl border border-dashed border-agro/35 bg-mint/40 p-4 text-sm text-ink-soft">
-        <p className="flex items-center gap-2 font-semibold text-forest">
-          <FlaskConical className="size-4 text-agro" aria-hidden /> Acesso demonstrativo
-        </p>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">Qualquer e-mail válido e senha com 6 ou mais caracteres dão acesso. Nada é enviado a servidores.</p>
-        <button
-          type="button"
-          onClick={() => {
-            setEmail(DEMO_USER.email)
-            setPassword('demo1234')
-            setErrors({})
-          }}
-          className="mt-2 text-xs font-semibold text-agro hover:underline"
-        >
-          Preencher com a conta de João Silva (fictícia)
-        </button>
-      </div>
     </div>
   )
 }

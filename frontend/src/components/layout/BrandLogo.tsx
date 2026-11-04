@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/format'
+import logo from "../../../public/images/landing/logo_Diagro.svg";
+import Image from "next/image";
 
 /** Leaf shaped like an eye with a lens at its center, framed by scan brackets. */
 export function LogoMark({ className, inverted }: { className?: string; inverted?: boolean }) {
@@ -23,12 +25,12 @@ export function LogoMark({ className, inverted }: { className?: string; inverted
 export function Logo({ href = '/', dark, className, compact }: { href?: string; dark?: boolean; className?: string; compact?: boolean }) {
   return (
     <Link href={href} className={cn('inline-flex items-center gap-2.5 rounded-lg', className)} aria-label="DiAgro — página inicial">
-      <LogoMark className="size-9 shrink-0" inverted={dark} />
-      {!compact && (
-        <span className={cn('font-display text-[20px] font-extrabold tracking-tight', dark ? 'text-white' : 'text-forest')}>
-          <span className={dark ? 'text-lime' : 'text-agro'}>Di</span>Agro
-        </span>
-      )}
+        <Image 
+        src={logo}
+        alt="DiAgro"
+        width={130}
+        height={32}
+        />
     </Link>
   )
 }
