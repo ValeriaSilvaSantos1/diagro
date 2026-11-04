@@ -178,3 +178,80 @@
     animation-iteration-count: 1 !important;
   }
 }
+
+/*
+ * Plataforma (login e área interna).
+ * Complementa a paleta acima com estados de alerta/erro, sombras e
+ * animações usados pelas telas do protótipo no Figma Make.
+ */
+:root {
+  --warn: #e9a23b;
+  --warn-soft: #fdf3e1;
+  --warn-ink: #855310;
+  --danger: #d9534f;
+  --danger-soft: #fbeceb;
+  --danger-ink: #a5322f;
+}
+
+@theme inline {
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-ink: var(--danger-ink);
+
+  --shadow-card:
+    0 1px 2px color-mix(in srgb, var(--forest) 4%, transparent),
+    0 6px 20px -8px color-mix(in srgb, var(--forest) 10%, transparent);
+
+  --animate-scan: scan 3.2s ease-in-out infinite;
+  --animate-draw: draw 1.2s ease-out both;
+
+  /* linha de varredura sobre a imagem em análise */
+  @keyframes scan {
+    0%,
+    100% {
+      top: 4%;
+    }
+    50% {
+      top: 94%;
+    }
+  }
+
+  /* barra de confiança preenchendo da esquerda para a direita */
+  @keyframes draw {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+}
+
+/* grade sutil de "visão computacional" sobre fundos escuros */
+@utility bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--agro);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--lime);
+    color: var(--forest);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
