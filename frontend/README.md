@@ -19,11 +19,12 @@ frontend/
 ├── public/              # arquivos estáticos (imagens, ícones)
 └── src/
     ├── app/             # rotas, layouts e páginas (App Router)
+    │   └── (marketing)/ # landing page: _components (seções) e _data (textos)
     ├── components/
-    │   ├── layout/      # header, footer, sidebar...
-    │   └── ui/          # componentes visuais reutilizáveis (Button, Input...)
+    │   ├── layout/      # peças de layout compartilhadas (Logo...)
+    │   └── ui/          # componentes do shadcn (Button, Sheet...)
     ├── hooks/           # hooks React customizados
-    ├── lib/             # utilitários e configuração (env, helpers)
+    ├── lib/             # utilitários e configuração (env, rotas)
     ├── services/        # comunicação com a API do backend
     └── types/           # tipos e interfaces TypeScript compartilhados
 ```
@@ -34,4 +35,8 @@ frontend/
 - Imports internos usam o alias `@/` (aponta para `src/`), ex.: `import { api } from "@/services/api"`.
 - Componentes em PascalCase (`UploadForm.tsx`); hooks com prefixo `use` (`useUpload.ts`); demais arquivos em camelCase.
 - Toda chamada ao backend passa por `src/services`, nunca direto de um componente.
+- Textos e listas da landing ficam em `src/app/(marketing)/_data/content.ts`: para mudar conteúdo, edite esse arquivo, não os componentes.
+- URLs internas vêm de `src/lib/routes.ts` (ex.: `routes.login`), nunca escritas direto no componente.
+- Cores, fontes, sombras e animações são tokens do `src/app/globals.css` (`bg-agro`, `text-ink`, `shadow-raised`...). Evite cores soltas como `#28784b` nos componentes.
+- Ao estilizar um `Link` como botão, use `cn(buttonVariants({ ... }))`: o `cn` resolve conflitos de classes entre a base e a variante.
 - Variáveis de ambiente ficam em `.env.local` (não versionado); novas variáveis devem ser documentadas em `.env.example`.
