@@ -16,6 +16,13 @@ class Settings(BaseSettings):
     MONGO_INITDB_ROOT_USERNAME: str | None = None
     MONGO_INITDB_ROOT_PASSWORD: str | None = None
 
+    # RustFS
+    RUSTFS_ACCESS_KEY: str
+    RUSTFS_SECRET_KEY: str
+    S3_ENDPOINT_URL: str = "http://localhost:9000"
+    S3_BUCKET: str = "diagro-imagens"
+    S3_REGIAO: str = "us-east-1"
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
