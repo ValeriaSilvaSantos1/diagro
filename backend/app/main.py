@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from sqlalchemy import text, create_engine
 
+from app.controllers import auth
 from app.core.config import settings
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
 
@@ -30,6 +31,8 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+app.include_router(auth.router)
 
 
 @app.get("/health", tags=["Health Check"])

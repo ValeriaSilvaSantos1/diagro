@@ -23,6 +23,11 @@ class Settings(BaseSettings):
     S3_BUCKET: str = "diagro-imagens"
     S3_REGIAO: str = "us-east-1"
 
+    # Autenticação (JWT)
+    JWT_SECRET: str
+    JWT_ALGORITMO: str = "HS256"
+    JWT_EXPIRA_MINUTOS: int = 30
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
