@@ -3,11 +3,12 @@
 import { useState, type FormEvent } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { FlaskConical, Mail } from 'lucide-react'
+import { Mail } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { Field, Input, PasswordInput } from '@/components/common/Field'
 import { useToast } from '@/components/common/Toast'
-import { DEMO_USER, useAppStore } from '@/store/AppStore'
+import { useAppStore } from '@/store/AppStore'
+import { login as authenticate } from '@/services/auth'
 import { EMAIL_RE } from '@/lib/format'
 
 export default function Login() {
@@ -24,7 +25,7 @@ export default function Login() {
   const fromParam = params.get('from')
   const from = fromParam && fromParam.startsWith('/app') ? fromParam : '/app'
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     const next: typeof errors = {}
     if (!email.trim()) next.email = 'Informe seu e-mail.'
@@ -34,13 +35,28 @@ export default function Login() {
     setErrors(next)
     if (Object.keys(next).length) return
     setLoading(true)
-    window.setTimeout(() => {
-      login(email.trim(), true)
-      toast({ title: 'Bem-vindo de volta!', description: 'Você entrou no ambiente demonstrativo.' })
+    try {
+      const result = await authenticate(email.trim(), password)
+      login(
+        {
+          name: result.user.nome,
+          email: result.user.email,
+        },
+        result.token,
+        true,
+      )
+      toast({ title: 'Bem-vindo de volta!', description: 'Você entrou no DiAgro.' })
       router.replace(from)
-      setLoading(false)
       setPassword('')
-    }, 600)
+    } catch (error) {
+      toast({
+        title: 'Não foi possível entrar',
+        description: error instanceof Error ? error.message : 'Verifique seu e-mail e sua senha.',
+        tone: 'error',
+      })
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

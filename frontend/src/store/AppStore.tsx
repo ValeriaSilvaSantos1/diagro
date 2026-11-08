@@ -6,6 +6,7 @@ import type { Analysis, AppNotification, Crop, Preferences, User } from '@/types
 
 const DATA_KEY = 'diagro:data:v1'
 const SESSION_KEY = 'diagro:session'
+const TOKEN_KEY = 'diagro:token'
 
 interface PersistedData {
   user: User
@@ -59,7 +60,10 @@ function load(): PersistedData {
 
 function readSession() {
   try {
-    return Boolean(localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY))
+    return Boolean(
+      (localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)) &&
+        (localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY)),
+    )
   } catch {
     return false
   }
@@ -72,7 +76,7 @@ export type NewAnalysis = Omit<Analysis, 'id' | 'createdAt' | 'source'>
 interface AppStoreValue extends PersistedData {
   isAuthenticated: boolean
   storageWarning: boolean
-  login: (email: string, remember: boolean) => void
+  login: (user: User, token: string, remember: boolean) => void
   signup: (user: User) => void
   logout: () => void
   updateUser: (patch: Partial<User>) => void
@@ -124,15 +128,11 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const update = useCallback((fn: (d: PersistedData) => PersistedData) => setData((d) => (d ? fn(d) : d)), [])
 
   const login = useCallback(
-    (email: string, remember: boolean) => {
+    (user: User, token: string, remember: boolean) => {
       const store = remember ? localStorage : sessionStorage
       store.setItem(SESSION_KEY, '1')
-      update((d) => {
-        if (d.user.email.toLowerCase() === email.toLowerCase()) return d
-        const local = email.split('@')[0].split(/[._-]/)[0] ?? 'Produtor'
-        const name = local.charAt(0).toUpperCase() + local.slice(1)
-        return { ...d, user: { ...d.user, email, name } }
-      })
+      store.setItem(TOKEN_KEY, token)
+      update((d) => ({ ...d, user: { ...d.user, ...user } }))
       setAuthenticated(true)
     },
     [update],
@@ -150,6 +150,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     localStorage.removeItem(SESSION_KEY)
     sessionStorage.removeItem(SESSION_KEY)
+    localStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(TOKEN_KEY)
     setAuthenticated(false)
   }, [])
 

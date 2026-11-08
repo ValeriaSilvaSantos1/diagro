@@ -8,6 +8,8 @@ import { Button } from '@/components/common/Button'
 import { Checkbox, Field, Input, PasswordInput } from '@/components/common/Field'
 import { DemoNotice } from '@/components/common/Misc'
 import { useAppStore } from '@/store/AppStore'
+import { login as authenticate, signup as createAccount } from '@/services/auth'
+import { useToast } from '@/components/common/Toast'
 import { EMAIL_RE, cn, firstName } from '@/lib/format'
 
 type Errors = Partial<Record<'name' | 'email' | 'password' | 'confirm' | 'terms', string>>
@@ -39,8 +41,9 @@ export function StrengthMeter({ value }: { value: string }) {
 }
 
 export default function Signup() {
-  const { signup } = useAppStore()
+  const { login } = useAppStore()
   const router = useRouter()
+  const toast = useToast()
   const [form, setForm] = useState({ name: '', email: '', password: '', confirm: '', property: '' })
   const [terms, setTerms] = useState(false)
   const [errors, setErrors] = useState<Errors>({})
@@ -52,7 +55,7 @@ export default function Signup() {
     setErrors((er) => ({ ...er, [k]: undefined }))
   }
 
-  const submit = (e: FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     const next: Errors = {}
     if (form.name.trim().length < 3) next.name = 'Informe seu nome completo.'
@@ -63,11 +66,28 @@ export default function Signup() {
     setErrors(next)
     if (Object.keys(next).length) return
     setLoading(true)
-    window.setTimeout(() => {
-      signup({ name: form.name.trim(), email: form.email.trim(), property: form.property.trim() || undefined })
+    try {
+      await createAccount(form.name.trim(), form.email.trim(), form.password)
+      const result = await authenticate(form.email.trim(), form.password)
+      login(
+        {
+          name: result.user.nome,
+          email: result.user.email,
+          property: form.property.trim() || undefined,
+        },
+        result.token,
+        true,
+      )
       setLoading(false)
       setDone(true)
-    }, 800)
+    } catch (error) {
+      toast({
+        title: 'Não foi possível criar a conta',
+        description: error instanceof Error ? error.message : 'Tente novamente.',
+        tone: 'error',
+      })
+      setLoading(false)
+    }
   }
 
   if (done)
@@ -77,7 +97,7 @@ export default function Signup() {
           <CircleCheck className="size-8" />
         </div>
         <h1 className="mt-6 text-3xl font-extrabold text-ink">Conta criada!</h1>
-        <p className="mt-2 text-muted-foreground">Tudo pronto, {firstName(form.name)}. Sua conta demonstrativa foi salva neste navegador.</p>
+        <p className="mt-2 text-muted-foreground">Tudo pronto, {firstName(form.name)}. Sua conta foi criada com sucesso.</p>
         <Button size="lg" className="mt-8 w-full" onClick={() => {
             router.replace('/app')
             setDone(false)
@@ -160,7 +180,7 @@ export default function Signup() {
         </Link>
       </p>
       <DemoNotice className="mt-8">
-        <strong className="font-semibold text-forest">Cadastro demonstrativo.</strong> Os dados ficam apenas neste navegador e não são enviados a nenhum servidor.
+        Seus dados são enviados com segurança para a API e sua senha é armazenada apenas como hash.
       </DemoNotice>
     </div>
   )
