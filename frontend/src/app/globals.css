@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --radius: 0.625rem;
+
+  /*
+   * Paleta do Diagro, tirada do logo (public/images/landing/logo_Diagro.svg):
+   * - forest: verde-escuro do "Di"
+   * - agro: verde médio das folhas (cor principal de botões e links)
+   * - leaf: verde do "Agro"; contraste baixo no branco, use só em detalhes
+   *   decorativos, nunca em texto
+   * - lime: verde-claro das folhas
+   * Os demais tons são variações desses verdes.
+   */
+  --forest: #0b3b2c;
+  --forest-deep: #08291f;
+  --agro: #2e7d3a;
+  --agro-dark: #1e5f34;
+  --leaf: #79b04b;
+  --lime: #a7cc5c;
+  --mint: #eef5e9;
+  --mint-strong: #dfedd6;
+  --mist: #f5f9f2;
+  --ink: #0e2820;
+  --ink-soft: #364c45;
+  --line: #e2efda;
+  --line-strong: #c5d6b9;
+
+  --background: #ffffff;
+  --foreground: var(--ink);
+
+  /* tokens usados pelos componentes do shadcn */
+  --card: #ffffff;
+  --card-foreground: var(--foreground);
+  --popover: #ffffff;
+  --popover-foreground: var(--foreground);
+  --primary: var(--agro);
+  --primary-foreground: #ffffff;
+  --secondary: var(--mist);
+  --secondary-foreground: var(--ink);
+  --muted: var(--mist);
+  --muted-foreground: #667470;
+  --accent: var(--mint);
+  --accent-foreground: var(--agro-dark);
+  --destructive: #d9534f;
+  --border: var(--line);
+  --input: var(--line-strong);
+  --ring: var(--agro);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-forest: var(--forest);
+  --color-forest-deep: var(--forest-deep);
+  --color-agro: var(--agro);
+  --color-agro-dark: var(--agro-dark);
+  --color-leaf: var(--leaf);
+  --color-mint: var(--mint);
+  --color-mint-strong: var(--mint-strong);
+  --color-lime: var(--lime);
+  --color-mist: var(--mist);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-manrope), var(--font-inter), ui-sans-serif,
+    system-ui, sans-serif;
+
+  --shadow-raised:
+    0 2px 4px color-mix(in srgb, var(--forest) 5%, transparent),
+    0 16px 36px -14px color-mix(in srgb, var(--forest) 20%, transparent);
+  --shadow-float:
+    0 30px 70px -24px color-mix(in srgb, var(--forest-deep) 42%, transparent),
+    0 10px 24px -12px color-mix(in srgb, var(--forest-deep) 22%, transparent);
+  --shadow-cta: inset 0 1px 0 rgb(255 255 255 / 0.14),
+    0 8px 18px -8px color-mix(in srgb, var(--agro) 70%, transparent);
+
+  --animate-fade-up: fade-up 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  /* altura calculada pelo Accordion do Base UI */
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--accordion-panel-height);
+    }
+  }
+
+  @keyframes accordion-up {
+    from {
+      height: var(--accordion-panel-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-[-0.02em];
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/*
+ * Plataforma (login e área interna).
+ * Complementa a paleta acima com estados de alerta/erro, sombras e
+ * animações usados pelas telas do protótipo no Figma Make.
+ */
+:root {
+  --warn: #e9a23b;
+  --warn-soft: #fdf3e1;
+  --warn-ink: #855310;
+  --danger: #d9534f;
+  --danger-soft: #fbeceb;
+  --danger-ink: #a5322f;
+}
+
+@theme inline {
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-warn-ink: var(--warn-ink);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-ink: var(--danger-ink);
+
+  --shadow-card:
+    0 1px 2px color-mix(in srgb, var(--forest) 4%, transparent),
+    0 6px 20px -8px color-mix(in srgb, var(--forest) 10%, transparent);
+
+  --animate-scan: scan 3.2s ease-in-out infinite;
+  --animate-draw: draw 1.2s ease-out both;
+
+  /* linha de varredura sobre a imagem em análise */
+  @keyframes scan {
+    0%,
+    100% {
+      top: 4%;
+    }
+    50% {
+      top: 94%;
+    }
+  }
+
+  /* barra de confiança preenchendo da esquerda para a direita */
+  @keyframes draw {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+}
+
+/* grade sutil de "visão computacional" sobre fundos escuros */
+@utility bg-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--lime) 8%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--agro);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--lime);
+    color: var(--forest);
+  }
+
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
