@@ -71,6 +71,15 @@ function readSession() {
 
 const uid = () => Math.random().toString(36).slice(2, 10)
 
+// Marca que a sessão foi encerrada pelo próprio usuário (botão "Sair"), para a
+// proteção da área interna não mandá-lo ao login enquanto ele vai para a página inicial.
+let userSignedOut = false
+export const consumeUserSignOut = () => {
+  const value = userSignedOut
+  userSignedOut = false
+  return value
+}
+
 export type NewAnalysis = Omit<Analysis, 'id' | 'createdAt' | 'source'>
 
 interface AppStoreValue extends PersistedData {
@@ -78,7 +87,8 @@ interface AppStoreValue extends PersistedData {
   storageWarning: boolean
   login: (user: User, token: string, remember: boolean) => void
   signup: (user: User) => void
-  logout: () => void
+  /** Encerra a sessão. `expired: true` quando o token venceu (a pessoa volta ao login, não à página inicial). */
+  logout: (options?: { expired?: boolean }) => void
   updateUser: (patch: Partial<User>) => void
   addAnalysis: (a: NewAnalysis) => Analysis
   updateAnalysis: (id: string, patch: Partial<Analysis>) => void
@@ -147,7 +157,8 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
     [update],
   )
 
-  const logout = useCallback(() => {
+  const logout = useCallback((options?: { expired?: boolean }) => {
+    userSignedOut = !options?.expired
     localStorage.removeItem(SESSION_KEY)
     sessionStorage.removeItem(SESSION_KEY)
     localStorage.removeItem(TOKEN_KEY)
