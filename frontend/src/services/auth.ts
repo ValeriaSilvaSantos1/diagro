@@ -20,6 +20,11 @@ export async function signup(nome: string, email: string, senha: string) {
   });
 }
 
+/** Usuário dono do token salvo. Responde 401 se o token estiver ausente, inválido ou expirado. */
+export async function getCurrentUser() {
+  return api<AuthUser>("/auth/me");
+}
+
 export async function login(email: string, senha: string) {
   const token = await api<TokenResponse>("/auth/login", {
     method: "POST",
