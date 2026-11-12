@@ -11,9 +11,10 @@ from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from diagro_ml.calibracao import META_DE_ACERTO, calibrar_limiar
+from diagro_ml.calibracao import META_DE_ACERTO, calibrar_corte, calibrar_limiar
 from diagro_ml.dados import dividir
-from diagro_ml.modelo import TRANSFORMACAO, criar_rede
+from diagro_ml.indice import Indice
+from diagro_ml.modelo import TRANSFORMACAO, criar_rede, vetores
 
 CLASSES = json.loads((Path(__file__).resolve().parents[1] / "classes.json").read_text())
 
@@ -47,6 +48,10 @@ def probabilidades(rede, carregador):
         saidas.append(torch.softmax(rede(entrada), dim=1))
         rotulos.append(rotulo)
     return torch.cat(saidas).numpy(), torch.cat(rotulos).numpy()
+
+
+def entradas(carregador):
+    return (entrada for entrada, _ in carregador)
 
 
 def macro_f1_com_ic(rotulos, previstos, labels, reamostras=1000, semente=42):
@@ -108,6 +113,11 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
     limiar = calibrar_limiar(confiancas, acertos)
     (saida / "validacao.json").write_text(json.dumps({"confiancas": confiancas, "acertos": acertos}))
 
+    treino_ordenado = carregador("treino", TRANSFORMACAO)
+    indice = Indice(vetores(rede, entradas(treino_ordenado)), [c for _, c in partes["treino"]], [a for a, _ in partes["treino"]])
+    indice.salvar(saida / "indice.npz")
+    corte = calibrar_corte(indice.distancias(vetores(rede, entradas(validacao))))
+
     p, y = probabilidades(rede, teste)
     aceitos = p.max(1) >= limiar
     metricas = {
@@ -115,26 +125,30 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
         "epocas": epocas,
         "meta_de_acerto": META_DE_ACERTO,
         "limiar": limiar,
+        "corte": corte,
         "validacao": {"macro_f1": float(melhor)},
         "teste": {
             **macro_f1_com_ic(y, p.argmax(1), list(range(len(CLASSES)))),
             "cobertura": float(aceitos.mean()),
             "acerto_nos_aceitos": float((p.argmax(1) == y)[aceitos].mean()) if aceitos.any() else None,
+            "fora_do_padrao": float((indice.distancias(vetores(rede, entradas(teste))) > corte).mean()),
         },
     }
     if externo:
-        metricas["externo"] = avaliar_externo(rede, externo, lote)
+        metricas["externo"] = avaliar_externo(rede, externo, lote, indice, corte)
     (saida / "metricas.json").write_text(json.dumps(metricas, indent=2, ensure_ascii=False))
     return metricas
 
 
-def avaliar_externo(rede, pasta, lote):
+def avaliar_externo(rede, pasta, lote, indice, corte):
     """Dataset de outra fonte, com pastas já nomeadas pelas classes do modelo que ele tem."""
     pasta = Path(pasta)
     itens = [(c.relative_to(pasta).as_posix(), c.parent.name) for c in sorted(pasta.glob("*/*"))]
-    p, y = probabilidades(rede, DataLoader(Imagens(pasta, itens, TRANSFORMACAO), batch_size=lote, num_workers=4))
+    carregador = DataLoader(Imagens(pasta, itens, TRANSFORMACAO), batch_size=lote, num_workers=4)
+    p, y = probabilidades(rede, carregador)
     presentes = sorted({int(r) for r in y})
-    return {**macro_f1_com_ic(y, p.argmax(1), presentes), "classes": [CLASSES[i] for i in presentes]}
+    fora_do_padrao = float((indice.distancias(vetores(rede, entradas(carregador))) > corte).mean())
+    return {**macro_f1_com_ic(y, p.argmax(1), presentes), "classes": [CLASSES[i] for i in presentes], "fora_do_padrao": fora_do_padrao}
 
 
 if __name__ == "__main__":

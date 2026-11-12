@@ -1,4 +1,4 @@
-"""Etapa 5 do plano de testes, contra o resultado de um treino de verdade (5.3, 5.6, 5.7 e 5.8).
+"""Etapa 5 do plano de testes, contra o resultado de um treino de verdade (5.3 e 5.6 a 5.10).
 
 Roda só no treino.yml. DIAGRO_DADOS aponta para o dataset preparado e DIAGRO_SAIDA para a pasta
 que o treino gravou.
@@ -11,6 +11,8 @@ from pathlib import Path
 import pytest
 
 from diagro_ml.calibracao import calibrar_limiar
+from diagro_ml.dados import dividir
+from diagro_ml.indice import Indice
 
 DADOS = Path(os.environ["DIAGRO_DADOS"])
 SAIDA = Path(os.environ["DIAGRO_SAIDA"])
@@ -41,3 +43,14 @@ def test_5_8_teste_externo_reportado_com_intervalo(metricas):
 
     assert externo["n"] > 0
     assert externo["ic95"][0] <= externo["macro_f1"] <= externo["ic95"][1]
+
+
+def test_5_9_indice_com_todas_as_imagens_de_treino_e_corte_gravado(metricas):
+    indice = Indice.carregar(SAIDA / "indice.npz")
+
+    assert len(indice.vetores) == len(indice.classes) == len(dividir(DADOS)["treino"])
+    assert metricas["corte"] > 0
+
+
+def test_5_10_poucas_fotos_do_teste_interno_fora_do_padrao(metricas):
+    assert metricas["teste"]["fora_do_padrao"] <= 0.07
