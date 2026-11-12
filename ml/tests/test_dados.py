@@ -1,5 +1,5 @@
 """Etapa 5 do plano de testes: divisão do dataset em treino, validação e teste (5.1 e 5.2) e o
-agrupamento de cópias giradas ou espelhadas, que o Sethy tem aos milhares (D.1 a D.4, aprovados em 12/11)."""
+agrupamento de cópias giradas ou espelhadas, que o Sethy tem aos milhares (D.1 a D.4 e R.1, aprovados em 12/11)."""
 
 import hashlib
 import shutil
@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 from PIL import Image
 
-from diagro_ml.dados import agrupar, assinatura, distancia_perceptual, dividir
+from diagro_ml.dados import agrupar, assinatura, distancia_perceptual, dividir, retirar_quase_iguais
 
 
 def textura(semente):
@@ -73,3 +73,18 @@ def test_d4_vinte_fotos_diferentes_viram_vinte_grupos(pasta):
     grupos = agrupar(pasta)
 
     assert {classe: len(lotes) for classe, lotes in grupos.items()} == {"blast": 20, "normal": 20, "tungro": 20}
+
+
+def test_r1_tira_do_teste_as_copias_de_fotos_do_treino(tmp_path):
+    (tmp_path / "treino" / "blast").mkdir(parents=True)
+    (tmp_path / "teste" / "blast").mkdir(parents=True)
+    textura(1).save(tmp_path / "treino" / "blast" / "a.jpg", quality=95)
+    original = Image.open(tmp_path / "treino" / "blast" / "a.jpg")
+    original.rotate(90, expand=True).save(tmp_path / "teste" / "blast" / "a_girada.jpg", quality=95)
+    original.transpose(Image.FLIP_LEFT_RIGHT).save(tmp_path / "teste" / "blast" / "a_espelhada.jpg", quality=95)
+    textura(2).save(tmp_path / "teste" / "blast" / "b.jpg", quality=95)
+
+    retiradas = retirar_quase_iguais(tmp_path / "teste", tmp_path / "treino")
+
+    assert sorted(p.name for p in retiradas) == ["a_espelhada.jpg", "a_girada.jpg"]
+    assert sorted(p.name for p in (tmp_path / "teste" / "blast").iterdir()) == ["b.jpg"]

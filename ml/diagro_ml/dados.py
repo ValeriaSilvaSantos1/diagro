@@ -1,3 +1,4 @@
+import argparse
 import random
 from pathlib import Path
 
@@ -86,3 +87,26 @@ def dividir(pasta, semente=42, proporcoes=(0.70, 0.15, 0.15)):
         for nome, fatia in fatias.items():
             partes[nome] += [(caminho, classe) for lote in fatia for caminho in lote]
     return partes
+
+
+def retirar_quase_iguais(teste, treino, limiar=LIMIAR_PERCEPTUAL):
+    """Apaga de teste/<classe>/<imagem> as fotos a até `limiar` bits de alguma foto de treino/<classe>/<imagem>
+    e devolve os caminhos apagados. O Bangladesh repete fotos entre as próprias pastas de treino e de teste."""
+    fotos_teste = sorted(Path(teste).glob("*/*"))
+    base = assinaturas(sorted(Path(treino).glob("*/*")))
+    perto = (distancias_perceptuais(assinaturas(fotos_teste), base) <= limiar).any(1)
+    retiradas = [foto for foto, apagar in zip(fotos_teste, perto) if apagar]
+    for foto in retiradas:
+        foto.unlink()
+    return retiradas
+
+
+if __name__ == "__main__":
+    argumentos = argparse.ArgumentParser(description="Tira do teste as fotos quase iguais a uma do treino.")
+    argumentos.add_argument("teste")
+    argumentos.add_argument("treino")
+    a = argumentos.parse_args()
+    retiradas = retirar_quase_iguais(a.teste, a.treino)
+    print(f"{len(retiradas)} fotos do teste quase iguais a uma do treino foram retiradas")
+    for foto in retiradas:
+        print(f"  {Path(foto).relative_to(a.teste)}")
