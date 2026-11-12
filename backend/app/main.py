@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text, create_engine
 
-from app.controllers import auth, culturas
+from app.controllers import analises, auth, culturas
 from app.core.config import settings
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
 
@@ -35,7 +35,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -43,6 +43,8 @@ app.add_middleware(
 
 app.include_router(auth.router)
 app.include_router(culturas.router)
+app.include_router(analises.router)
+app.include_router(analises.imagens_router)
 
 
 @app.get("/health", tags=["Health Check"])

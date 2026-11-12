@@ -8,6 +8,8 @@ boto3==1.40.70
 passlib[argon2]==1.7.4
 PyJWT==2.10.1
 email-validator==2.2.0
+python-multipart==0.0.20
+pillow==13.0.0
 --extra-index-url https://download.pytorch.org/whl/cpu
 torch==2.15.0+cpu
 torchvision==0.29.2+cpu

@@ -22,7 +22,7 @@ export function LogoMark({ className, inverted }: { className?: string; inverted
   )
 }
 
-export function Logo({ href = '/', dark, className, compact }: { href?: string; dark?: boolean; className?: string; compact?: boolean }) {
+export function Logo({ href = '/', className }: { href?: string; dark?: boolean; className?: string; compact?: boolean }) {
   return (
     <Link href={href} className={cn('inline-flex items-center gap-2.5 rounded-lg', className)} aria-label="DiAgro — página inicial">
         <Image 

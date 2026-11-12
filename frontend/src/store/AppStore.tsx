@@ -1,10 +1,10 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { seedAnalyses, seedCrops, seedNotifications } from '@/lib/demo/seed'
+import { listarAnalises } from '@/services/analises'
+import { listarCulturas } from '@/services/culturas'
 import type { Analysis, AppNotification, Crop, Preferences, User } from '@/types/domain'
 
-const DATA_KEY = 'diagro:data:v1'
 const SESSION_KEY = 'diagro:session'
 const TOKEN_KEY = 'diagro:token'
 
@@ -16,14 +16,6 @@ interface PersistedData {
   prefs: Preferences
 }
 
-export const DEMO_USER: User = {
-  name: 'João Silva',
-  email: 'joao.silva@exemplo.com',
-  property: 'Sítio Boa Esperança',
-  propertyArea: '25',
-  mainCrops: 'Tomate, milho, soja e feijão',
-}
-
 const DEFAULT_PREFS: Preferences = {
   notifyAnalysis: true,
   notifyAttention: true,
@@ -33,29 +25,8 @@ const DEFAULT_PREFS: Preferences = {
   shareAnonymous: false,
 }
 
-function createSeed(): PersistedData {
-  const now = Date.now()
-  const crops = seedCrops(now)
-  return {
-    user: DEMO_USER,
-    crops,
-    analyses: seedAnalyses(crops, now),
-    notifications: seedNotifications(now),
-    prefs: DEFAULT_PREFS,
-  }
-}
-
-function load(): PersistedData {
-  try {
-    const raw = localStorage.getItem(DATA_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as PersistedData
-      return { ...parsed, prefs: { ...DEFAULT_PREFS, ...parsed.prefs } }
-    }
-  } catch {
-    /* corrupted storage falls back to seed */
-  }
-  return createSeed()
+function emptyData(): PersistedData {
+  return { user: { name: '', email: '' }, crops: [], analyses: [], notifications: [], prefs: DEFAULT_PREFS }
 }
 
 function readSession() {
@@ -91,6 +62,7 @@ interface AppStoreValue extends PersistedData {
   logout: (options?: { expired?: boolean }) => void
   updateUser: (patch: Partial<User>) => void
   addAnalysis: (a: NewAnalysis) => Analysis
+    appendAnalysis: (a: Analysis) => void
   updateAnalysis: (id: string, patch: Partial<Analysis>) => void
   deleteAnalysis: (id: string) => void
   addCrop: (c: Omit<Crop, 'id' | 'createdAt'>) => Crop
@@ -107,33 +79,31 @@ interface AppStoreValue extends PersistedData {
 const AppStoreContext = createContext<AppStoreValue | null>(null)
 
 /**
- * Client-side store persisted in localStorage (demo only — swap for real API calls later).
- * Data is read after mount so server and first client render match; children render
- * once the browser state is available.
+ * Client-side session state. Domain data is loaded from the API after authentication.
  */
 const noopSubscribe = () => () => {}
 
 export function AppStoreProvider({ children }: { children: ReactNode }) {
   // false no servidor e durante a hidratação; true depois, no navegador.
   const isClient = useSyncExternalStore(noopSubscribe, () => true, () => false)
-  const [data, setData] = useState<PersistedData | null>(() => (typeof window === 'undefined' ? null : load()))
+  const [data, setData] = useState<PersistedData | null>(() => (typeof window === 'undefined' ? null : emptyData()))
   const [isAuthenticated, setAuthenticated] = useState(() => (typeof window === 'undefined' ? false : readSession()))
-  const [storageWarning, setStorageWarning] = useState(false)
+  const storageWarning = false
 
-  // Grava no localStorage fora do render; alterações seguidas viram uma só gravação.
   useEffect(() => {
-    if (!data) return
-    const id = window.setTimeout(() => {
-      try {
-        localStorage.setItem(DATA_KEY, JSON.stringify(data))
-        setStorageWarning(false)
-      } catch {
-        // Normalmente cota cheia por causa de imagens grandes enviadas.
-        setStorageWarning(true)
-      }
-    }, 0)
-    return () => window.clearTimeout(id)
-  }, [data])
+    if (!isAuthenticated) return
+    Promise.all([listarAnalises(), listarCulturas()])
+      .then(([analyses, cultures]) => {
+        setData((current) => current && {
+          ...current,
+          analyses,
+          crops: cultures.map((culture) => ({ id: String(culture.id), name: culture.nome, image: '', createdAt: new Date().toISOString() })),
+        })
+      })
+      .catch(() => {
+        // A tela pode continuar vazia enquanto a API estiver indisponível.
+      })
+  }, [isAuthenticated])
 
   const update = useCallback((fn: (d: PersistedData) => PersistedData) => setData((d) => (d ? fn(d) : d)), [])
 
@@ -187,6 +157,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
         update((d) => ({ ...d, analyses: [created, ...d.analyses] }))
         return created
       },
+      appendAnalysis: (analysis) => update((d) => ({ ...d, analyses: [analysis, ...d.analyses] })),
       updateAnalysis: (id, patch) => update((d) => ({ ...d, analyses: d.analyses.map((a) => (a.id === id ? { ...a, ...patch } : a)) })),
       deleteAnalysis: (id) => update((d) => ({ ...d, analyses: d.analyses.filter((a) => a.id !== id) })),
       addCrop: (c) => {
@@ -209,7 +180,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
       markNotificationRead: (id) => update((d) => ({ ...d, notifications: d.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)) })),
       markAllNotificationsRead: () => update((d) => ({ ...d, notifications: d.notifications.map((n) => ({ ...n, read: true })) })),
       setPrefs: (patch) => update((d) => ({ ...d, prefs: { ...d.prefs, ...patch } })),
-      resetDemo: () => update((d) => ({ ...createSeed(), user: d.user })),
+      resetDemo: () => update((d) => ({ ...d, analyses: [], crops: [], notifications: [] })),
       clearAllData: () => update((d) => ({ ...d, analyses: [], crops: [], notifications: [] })),
     }
   }, [data, isAuthenticated, storageWarning, login, signup, logout, update])

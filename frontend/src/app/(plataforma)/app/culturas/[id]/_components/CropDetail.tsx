@@ -6,7 +6,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft, ArrowRight, Calendar, ClipboardList, MapPinned, Pencil, Ruler, ScanSearch, SearchX, Trash2, TriangleAlert } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/common/Button'
 import { Card, CardHeader } from '@/components/common/Card'
-import { DemoBadge } from '@/components/common/Badge'
 import { EmptyState } from '@/components/common/Misc'
 import { ConfirmDialog } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
@@ -54,7 +53,6 @@ export default function CropDetail() {
         <div className="absolute inset-0 bg-gradient-to-r from-forest-deep via-forest-deep/75 to-forest-deep/20" />
         <div className="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <DemoBadge dark label="Dados demonstrativos" />
             <h1 className="mt-3 font-display text-4xl font-extrabold">{crop.name}</h1>
             <p className="mt-1 text-white/75">{crop.property ?? 'Propriedade não informada'}</p>
           </div>
