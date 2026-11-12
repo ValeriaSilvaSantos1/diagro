@@ -5,7 +5,6 @@ import { listarAnalises } from '@/services/analises'
 import { listarCulturas } from '@/services/culturas'
 import type { Analysis, AppNotification, Crop, Preferences, User } from '@/types/domain'
 
-const DATA_KEY = 'diagro:data:v1'
 const SESSION_KEY = 'diagro:session'
 const TOKEN_KEY = 'diagro:token'
 
@@ -89,7 +88,7 @@ export function AppStoreProvider({ children }: { children: ReactNode }) {
   const isClient = useSyncExternalStore(noopSubscribe, () => true, () => false)
   const [data, setData] = useState<PersistedData | null>(() => (typeof window === 'undefined' ? null : emptyData()))
   const [isAuthenticated, setAuthenticated] = useState(() => (typeof window === 'undefined' ? false : readSession()))
-  const [storageWarning, setStorageWarning] = useState(false)
+  const storageWarning = false
 
   useEffect(() => {
     if (!isAuthenticated) return

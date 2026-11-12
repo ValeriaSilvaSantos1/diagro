@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
-  ArrowRight,
   Calendar,
   CircleCheck,
   Download,
