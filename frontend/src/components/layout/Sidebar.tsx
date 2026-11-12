@@ -51,7 +51,7 @@ export function Sidebar({ variant = 'full', onNavigate }: Props) {
 
   const handleLogout = () => {
     logout()
-    toast({ title: 'Sessão encerrada', description: 'Seus dados demonstrativos continuam salvos neste navegador.', tone: 'info' })
+    toast({ title: 'Sessão encerrada', description: 'Você foi desconectado com sucesso.', tone: 'info' })
     router.push('/')
   }
 

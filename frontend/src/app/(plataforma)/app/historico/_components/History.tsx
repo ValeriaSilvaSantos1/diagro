@@ -5,7 +5,6 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { CloudOff, FlaskConical, Inbox, Plus, RotateCcw, Search, SearchX } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
-import { DemoBadge } from '@/components/common/Badge'
 import { Field, Input, Select } from '@/components/common/Field'
 import { EmptyState, PageHeader, Skeleton } from '@/components/common/Misc'
 import { Dropdown, MenuItem } from '@/components/common/Dropdown'
@@ -96,7 +95,6 @@ export default function History() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={<DemoBadge label="Exemplos demonstrativos" />}
         title="Histórico de análises"
         subtitle="Consulte as análises realizadas nas suas culturas."
         actions={

@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowRight, Calendar, ClipboardList, EllipsisVertical, Pencil, Plus, ScanSearch, Sprout, Trash2 } from 'lucide-react'
 import { Button } from '@/components/common/Button'
-import { DemoBadge } from '@/components/common/Badge'
 import { EmptyState, PageHeader } from '@/components/common/Misc'
 import { Card } from '@/components/common/Card'
 import { Dropdown, MenuItem } from '@/components/common/Dropdown'
@@ -46,7 +45,6 @@ export default function Crops() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={<DemoBadge label="Dados demonstrativos" />}
         title="Minhas culturas"
         subtitle="Organize suas culturas e acompanhe as análises relacionadas a cada uma."
         actions={

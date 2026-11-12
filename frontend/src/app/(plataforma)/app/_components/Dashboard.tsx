@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { ArrowRight, ClipboardList, ImagePlus, LoaderCircle, Plus, ScanSearch, Sprout, TriangleAlert } from 'lucide-react'
 import { ButtonLink } from '@/components/common/Button'
 import { Card, CardHeader } from '@/components/common/Card'
-import { DemoBadge } from '@/components/common/Badge'
 import { EmptyState, PageHeader } from '@/components/common/Misc'
 import { useToast } from '@/components/common/Toast'
 import { AnalysisList } from '@/components/analysis/AnalysisList'
@@ -24,7 +23,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={<DemoBadge label="Dados demonstrativos" />}
         title={`Olá, ${firstName(user.name)}!`}
         subtitle="Vamos acompanhar a saúde das suas plantas?"
         actions={

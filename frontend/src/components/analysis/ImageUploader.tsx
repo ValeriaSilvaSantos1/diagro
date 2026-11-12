@@ -7,6 +7,7 @@ import { Modal } from '@/components/common/Modal'
 import { cn } from '@/lib/format'
 
 export interface SelectedImage {
+  file: File
   dataUrl: string
   name: string
   size: number
@@ -47,8 +48,8 @@ export async function loadImageFile(file: File): Promise<SelectedImage> {
   if (!ACCEPTED.includes(file.type)) throw new Error('Formato não aceito. Envie uma imagem JPG, JPEG ou PNG.')
   if (file.size > MAX_BYTES) throw new Error('A imagem é muito grande. Envie um arquivo de até 10 MB.')
   try {
-    const dataUrl = await compress(await readAsDataUrl(file))
-    return { dataUrl, name: file.name, size: file.size }
+      const dataUrl = await compress(await readAsDataUrl(file))
+      return { file, dataUrl, name: file.name, size: file.size }
   } catch {
     throw new Error('Não foi possível ler esta imagem. Tente outro arquivo.')
   }
@@ -211,7 +212,8 @@ export function ImageUploader({ value, onChange, error }: Props) {
         onClose={() => setCameraOpen(false)}
         onCapture={async (dataUrl) => {
           const compressed = await compress(dataUrl)
-          onChange({ dataUrl: compressed, name: `foto-camera-${Date.now()}.jpg`, size: Math.round((compressed.length * 3) / 4) })
+          const file = new File([await (await fetch(compressed)).blob()], `foto-camera-${Date.now()}.jpg`, { type: 'image/jpeg' })
+          onChange({ file, dataUrl: compressed, name: file.name, size: file.size })
           setCameraOpen(false)
         }}
         onFallback={() => {

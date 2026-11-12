@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 import { Download, RotateCcw, SearchX } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { Card, CardHeader } from '@/components/common/Card'
-import { DemoBadge } from '@/components/common/Badge'
 import { Field, Select } from '@/components/common/Field'
 import { DemoNotice, EmptyState, PageHeader } from '@/components/common/Misc'
 import { useToast } from '@/components/common/Toast'
@@ -41,7 +40,6 @@ export default function Reports() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={<DemoBadge label="Dados demonstrativos" />}
         title="Relatórios"
         subtitle="Entenda a evolução das suas análises ao longo do tempo."
         actions={
