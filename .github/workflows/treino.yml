@@ -79,5 +79,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "modelo-${{ github.run_number }}" saida/pesos.pt saida/metricas.json classes.json \
+          gh release create "modelo-${{ github.run_number }}" saida/pesos.pt saida/indice.npz saida/metricas.json classes.json \
             --target "${{ github.sha }}" --title "Modelo ${{ github.run_number }}" --notes-file saida/metricas.json
