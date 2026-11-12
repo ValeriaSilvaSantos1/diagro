@@ -44,6 +44,7 @@ def test_5_8_teste_externo_reportado_com_intervalo(metricas):
 
     assert externo["n"] > 0
     assert externo["ic95"][0] <= externo["macro_f1"] <= externo["ic95"][1]
+    assert 0 <= externo["aceitos"] <= 1
 
 
 def test_5_9_indice_com_todas_as_imagens_de_treino_e_corte_gravado(metricas):
@@ -69,3 +70,4 @@ def test_5_12_doencas_desconhecidas_reportadas(metricas):
 
     assert desconhecidas["n"] > 0
     assert 0 <= desconhecidas["fora_do_padrao"] <= 1
+    assert 0 <= desconhecidas["aceitos"] <= 1

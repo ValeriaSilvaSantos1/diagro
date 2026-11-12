@@ -108,6 +108,7 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
             torch.save(rede.state_dict(), saida / "pesos.pt")
 
     rede.load_state_dict(torch.load(saida / "pesos.pt"))
+    print("calibrando o limiar na validação", flush=True)
     p, y = probabilidades(rede, validacao)
     confiancas, acertos = p.max(1).tolist(), (p.argmax(1) == y).tolist()
     limiar = calibrar_limiar(confiancas, acertos)
@@ -117,6 +118,7 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
     indice = Indice(vetores(rede, entradas(treino_ordenado)), [c for _, c in partes["treino"]], [a for a, _ in partes["treino"]])
     indice.salvar(saida / "indice.npz")
     corte = calibrar_corte(indice.distancias(vetores(rede, entradas(validacao))))
+    print(f"índice com {len(indice.vetores)} imagens de treino, corte {corte:.4f}; avaliando o teste", flush=True)
 
     p, y = probabilidades(rede, teste)
     aceitos = p.max(1) >= limiar
@@ -135,32 +137,39 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
         },
     }
     if externo:
-        metricas["externo"] = avaliar_externo(rede, externo, lote, indice, corte)
+        print("avaliando o teste externo", flush=True)
+        metricas["externo"] = avaliar_externo(rede, externo, lote, indice, corte, limiar)
     (saida / "metricas.json").write_text(json.dumps(metricas, indent=2, ensure_ascii=False))
     return metricas
 
 
-def avaliar_externo(rede, pasta, lote, indice, corte):
+def avaliar_externo(rede, pasta, lote, indice, corte, limiar):
     """Dataset de outra fonte. Pastas com nome de classe do modelo medem acerto; as outras são
-    doenças que o modelo não conhece e medem só quantas o índice marca como fora do padrão."""
+    doenças que o modelo não conhece, em que toda foto aceita pelos dois portões (confiança e
+    distância ao índice) vira um diagnóstico errado."""
     pasta = Path(pasta)
     todos = [(c.relative_to(pasta).as_posix(), c.parent.name) for c in sorted(pasta.glob("*/*"))]
 
     def carregador(itens):
         return DataLoader(Imagens(pasta, itens, TRANSFORMACAO), batch_size=lote, num_workers=4)
 
-    def fora_do_padrao(itens):
-        return float((indice.distancias(vetores(rede, entradas(carregador(itens)))) > corte).mean())
+    def avaliar(itens):
+        p, y = probabilidades(rede, carregador(itens))
+        distancias = indice.distancias(vetores(rede, entradas(carregador(itens))))
+        return p, y, distancias, (p.max(1) >= limiar) & (distancias <= corte)
 
     conhecidas = [item for item in todos if item[1] in CLASSES]
     desconhecidas = [item for item in todos if item[1] not in CLASSES]
-    p, y = probabilidades(rede, carregador(conhecidas))
+    p, y, distancias, aceitos = avaliar(conhecidas)
+    acertos = p.argmax(1) == y
     presentes = sorted({int(r) for r in y})
     resultado = {**macro_f1_com_ic(y, p.argmax(1), presentes), "classes": [CLASSES[i] for i in presentes],
-                 "fora_do_padrao": fora_do_padrao(conhecidas)}
+                 "fora_do_padrao": float((distancias > corte).mean()), "aceitos": float(aceitos.mean()),
+                 "acerto_nos_aceitos": float(acertos[aceitos].mean()) if aceitos.any() else None}
     if desconhecidas:
+        _, _, distancias, aceitos = avaliar(desconhecidas)
         resultado["desconhecidas"] = {"n": len(desconhecidas), "classes": sorted({c for _, c in desconhecidas}),
-                                      "fora_do_padrao": fora_do_padrao(desconhecidas)}
+                                      "fora_do_padrao": float((distancias > corte).mean()), "aceitos": float(aceitos.mean())}
     return resultado
 
 
