@@ -11,12 +11,12 @@ from pathlib import Path
 os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TESTE", "diagro_teste")
 os.environ["S3_BUCKET"] = os.environ.get("S3_BUCKET_TESTE", "diagro-imagens-teste")
 
-import pytest  # noqa: E402
-from alembic import command  # noqa: E402
-from alembic.config import Config  # noqa: E402
-from sqlalchemy import create_engine, text  # noqa: E402
+import pytest
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import create_engine, text
 
-from app.core.config import settings  # noqa: E402
+from app.core.config import settings
 
 BACKEND_DIR = Path(__file__).resolve().parent.parent
 
