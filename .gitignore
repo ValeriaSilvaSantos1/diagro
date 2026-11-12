@@ -228,3 +228,6 @@ graphify-out/
 
 # saída local do treino (pesos e métricas vão para o release)
 ml/saida/
+
+# Modelo baixado do release (ver README)
+/modelo/

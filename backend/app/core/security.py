@@ -44,7 +44,7 @@ def criar_token(usuario_id: int) -> str:
         "iat": agora,
         "exp": agora + timedelta(minutes=settings.JWT_EXPIRA_MINUTOS),
     }
-    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITMO)
+    return jwt.encode(payload, settings.JWT_SECRET.get_secret_value(), algorithm=settings.JWT_ALGORITMO)
 
 
 def ler_token(token: str) -> int:
@@ -52,7 +52,7 @@ def ler_token(token: str) -> int:
     try:
         payload = jwt.decode(
             token,
-            settings.JWT_SECRET,
+            settings.JWT_SECRET.get_secret_value(),
             algorithms=[settings.JWT_ALGORITMO],
             options={"require": ["exp", "sub"]},
         )

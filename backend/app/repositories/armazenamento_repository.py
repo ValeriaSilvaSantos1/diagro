@@ -31,7 +31,7 @@ class ArmazenamentoRepository:
             "s3",
             endpoint_url=settings.S3_ENDPOINT_URL,
             aws_access_key_id=settings.RUSTFS_ACCESS_KEY,
-            aws_secret_access_key=settings.RUSTFS_SECRET_KEY,
+            aws_secret_access_key=settings.RUSTFS_SECRET_KEY.get_secret_value(),
             region_name=settings.S3_REGIAO,
             config=Config(signature_version="s3v4", s3={"addressing_style": "path"}),
         )
