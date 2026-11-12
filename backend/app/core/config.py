@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     JWT_ALGORITMO: str = "HS256"
     JWT_EXPIRA_MINUTOS: int = 30
 
+    # Modelo: pasta com os arquivos de um release do treino (pesos.pt, indice.npz, classes.json, metricas.json)
+    MODELO_DIR: str | None = None
+
     @property
     def DATABASE_URL(self) -> str:
         return f"postgresql+psycopg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

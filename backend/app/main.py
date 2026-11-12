@@ -1,5 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,6 +9,7 @@ from sqlalchemy import text, create_engine
 from app.controllers import analises, auth, culturas
 from app.core.config import settings
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
+from app.services.classificador_service import ClassificadorService
 
 logger = logging.getLogger("uvicorn.error")
 
@@ -15,9 +17,14 @@ logger = logging.getLogger("uvicorn.error")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Roda uma vez quando a API sobe: garante que o bucket das imagens existe no RustFS.
-    Se o RustFS estiver fora do ar, a API sobe mesmo assim e o /health mostra o problema.
+    Roda uma vez quando a API sobe: carrega o modelo de MODELO_DIR e garante que o bucket das
+    imagens existe no RustFS. MODELO_DIR apontando para uma pasta errada impede a subida; sem
+    MODELO_DIR a API sobe sem modelo. Se o RustFS estiver fora do ar, a API sobe mesmo assim e o
+    /health mostra o problema.
     """
+    app.state.classificador = ClassificadorService.carregar(Path(settings.MODELO_DIR)) if settings.MODELO_DIR else None
+    if app.state.classificador is None:
+        logger.warning("MODELO_DIR não definido: a API sobe sem modelo.")
     try:
         ArmazenamentoRepository().garantir_bucket()
         logger.info("Bucket '%s' pronto no RustFS.", settings.S3_BUCKET)
@@ -56,7 +63,8 @@ def health_check():
         "status": "ok",
         "postgres": "desconhecido",
         "mongodb": "desconhecido",
-        "rustfs": "desconhecido"
+        "rustfs": "desconhecido",
+        "modelo": "não carregado",
     }
 
     # Teste de conexão com o PostgreSQL
@@ -85,5 +93,9 @@ def health_check():
     else:
         health_status["rustfs"] = f"erro: RustFS fora do ar ou bucket '{settings.S3_BUCKET}' inexistente"
         health_status["status"] = "alerta"
+
+    classificador = getattr(app.state, "classificador", None)
+    if classificador is not None:
+        health_status["modelo"] = classificador.modelo_versao
 
     return health_status
