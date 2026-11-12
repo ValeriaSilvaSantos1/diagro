@@ -17,7 +17,7 @@ export interface AnalysisApi {
   observacoes: string | null
 }
 
-function mapAnalysis(item: AnalysisApi): Analysis {
+export function mapAnalysis(item: AnalysisApi): Analysis {
   const image = item.arquivo_url.startsWith('http') ? item.arquivo_url : `${env.apiUrl}${item.arquivo_url}`
   const outcome = item.status === 'concluido' ? 'disease' : item.status === 'inconclusivo' ? 'inconclusive' : 'inconclusive'
   return {
@@ -27,7 +27,7 @@ function mapAnalysis(item: AnalysisApi): Analysis {
     cropName: item.cultura ?? 'Não informado',
     image,
     outcome,
-    status: item.status === 'pendente' || item.status === 'processando' ? 'processing' : item.status === 'erro' ? 'inconclusive' : 'done',
+    status: item.status === 'pendente' || item.status === 'processando' ? 'processing' : item.status === 'erro' || item.status === 'inconclusivo' ? 'inconclusive' : 'done',
     classification: item.nome_doenca ?? (item.status === 'pendente' || item.status === 'processando' ? 'Aguardando resultado' : 'Resultado inconclusivo'),
     catalogId: item.doenca_id === null ? null : String(item.doenca_id),
     confidence: item.confianca,
