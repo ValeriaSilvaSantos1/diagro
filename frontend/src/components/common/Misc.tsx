@@ -42,8 +42,6 @@ export function DemoNotice({ children, className }: { children?: ReactNode; clas
       <p>
         {children ?? (
           <>
-            <strong className="font-semibold text-forest">Dados demonstrativos.</strong> Os números e registros desta tela são fictícios e servem apenas para
-            apresentar o protótipo.
           </>
         )}
       </p>
