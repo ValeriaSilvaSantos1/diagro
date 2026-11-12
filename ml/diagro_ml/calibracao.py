@@ -1,4 +1,7 @@
+import numpy as np
+
 META_DE_ACERTO = 0.95
+PERCENTIL_DO_CORTE = 95
 
 
 def calibrar_limiar(confiancas, acertos, meta=META_DE_ACERTO):
@@ -12,3 +15,8 @@ def calibrar_limiar(confiancas, acertos, meta=META_DE_ACERTO):
     if limiar is None:
         raise ValueError(f"nenhum limiar atinge {meta:.0%} de acerto na validação")
     return limiar
+
+
+def calibrar_corte(distancias, percentil=PERCENTIL_DO_CORTE):
+    """Distância ao vizinho acima da qual a foto é tratada como fora do padrão do treino."""
+    return float(np.percentile(distancias, percentil))

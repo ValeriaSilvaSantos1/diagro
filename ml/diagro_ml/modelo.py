@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torchvision import models, transforms
 
@@ -20,8 +21,19 @@ class Classificador:
         probabilidades = torch.softmax(self.rede(entrada), dim=1)[0]
         return dict(zip(self.classes, probabilidades.tolist()))
 
+    def vetor(self, imagem) -> np.ndarray:
+        return vetores(self.rede, [TRANSFORMACAO(imagem.convert("RGB")).unsqueeze(0)])[0]
+
 
 def criar_rede(n_classes: int, pretreinada: bool = True) -> torch.nn.Module:
     rede = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1 if pretreinada else None)
     rede.classifier[1] = torch.nn.Linear(rede.classifier[1].in_features, n_classes)
     return rede
+
+
+@torch.no_grad()
+def vetores(rede: torch.nn.Module, lotes) -> np.ndarray:
+    """Vetor normalizado da penúltima camada da EfficientNet, que é o que o índice compara."""
+    rede.eval()
+    saidas = [torch.nn.functional.normalize(torch.flatten(rede.avgpool(rede.features(lote)), 1), dim=1) for lote in lotes]
+    return torch.cat(saidas).numpy()
