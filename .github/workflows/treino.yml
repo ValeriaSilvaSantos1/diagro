@@ -70,8 +70,24 @@ jobs:
           curl -fsSL -o "$RUNNER_TEMP/bangladesh.zip" "$BANGLADESH_URL"
           echo "$BANGLADESH_SHA256  $RUNNER_TEMP/bangladesh.zip" | sha256sum -c
           unzip -q "$RUNNER_TEMP/bangladesh.zip" -d "$RUNNER_TEMP/bangladesh"
-          python -m diagro_ml.preparar "$RUNNER_TEMP/bangladesh/Rice leaf disease" "$DADOS/bangladesh-256" \
-            --mapa '{"Bacterial Leaf Blight": "bacterial_leaf_blight", "Brown Spot": "brown_spot", "Healthy Rice Leaf": "normal", "Leaf Blast": "blast", "Rice Hispa": "hispa", "Leaf scald": "leaf_scald", "Narrow Brown Leaf Spot": "narrow_brown_leaf_spot", "Sheath Blight": "sheath_blight"}'
+          ORIGEM="$RUNNER_TEMP/bangladesh/Rice leaf disease"
+          CONHECIDAS='{"Bacterial Leaf Blight": "bacterial_leaf_blight", "Brown Spot": "brown_spot", "Healthy Rice Leaf": "normal", "Leaf Blast": "blast", "Rice Hispa": "hispa"}'
+          python -m diagro_ml.preparar "$ORIGEM" "$RUNNER_TEMP/bangladesh-256" --mapa "$CONHECIDAS"
+          for pasta in "$RUNNER_TEMP"/bangladesh-256/*/; do
+            classe=$(basename "$pasta")
+            mkdir -p "$DADOS/bangladesh-256/$classe"
+            find "$pasta" -name 'Testing data__*' -exec mv -t "$DADOS/bangladesh-256/$classe/" {} +
+            find "$pasta" -type f -exec mv -t "$DADOS/treino-256/$classe/" {} +
+          done
+          python -m diagro_ml.preparar "$ORIGEM" "$DADOS/bangladesh-256" \
+            --mapa '{"Leaf scald": "leaf_scald", "Narrow Brown Leaf Spot": "narrow_brown_leaf_spot", "Sheath Blight": "sheath_blight"}'
+
+      - name: Nenhuma foto do teste do Bangladesh quase igual a uma do treino
+        run: pytest -v tests_treino -k 5_11
+        env:
+          DIAGRO_DADOS: ${{ env.DADOS }}/treino-256
+          DIAGRO_EXTERNO: ${{ env.DADOS }}/bangladesh-256
+          DIAGRO_SAIDA: saida
 
       - run: python -m diagro_ml.treino --dados "$DADOS/treino-256" --externo "$DADOS/bangladesh-256" --saida saida --epocas ${{ inputs.epocas || 12 }}
 
