@@ -4,10 +4,7 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
-import torch
 from PIL import Image, UnidentifiedImageError
-
-from diagro_ml.modelo import Classificador, criar_rede
 
 
 class ImagemInvalida(Exception):
@@ -35,6 +32,9 @@ class ClassificadorService:
     @classmethod
     def carregar(cls, pasta: Path) -> "ClassificadorService":
         """Lê os arquivos de um release do treino: pesos.pt, classes.json e metricas.json."""
+        import torch
+        from diagro_ml.modelo import Classificador, criar_rede
+
         pasta = Path(pasta)
         classes = json.loads((pasta / "classes.json").read_text())
         metricas = json.loads((pasta / "metricas.json").read_text())

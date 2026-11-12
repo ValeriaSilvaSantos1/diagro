@@ -4,11 +4,9 @@ import json
 from pathlib import Path
 
 import pytest
-import torch
 from PIL import Image
 
 from app.services.classificador_service import ClassificadorService, ImagemInvalida
-from diagro_ml.modelo import criar_rede
 
 CLASSES = json.loads((Path(__file__).resolve().parents[2] / "ml" / "classes.json").read_text())
 
@@ -35,6 +33,9 @@ def jpeg(tmp_path):
 
 
 def test_carrega_classes_e_limiar_do_release(tmp_path):
+    torch = pytest.importorskip("torch")
+    criar_rede = pytest.importorskip("diagro_ml.modelo").criar_rede
+
     torch.save(criar_rede(len(CLASSES), pretreinada=False).state_dict(), tmp_path / "pesos.pt")
     (tmp_path / "classes.json").write_text(json.dumps(CLASSES))
     (tmp_path / "metricas.json").write_text(json.dumps({"arquitetura": "efficientnet_b0", "limiar": 0.6}))
