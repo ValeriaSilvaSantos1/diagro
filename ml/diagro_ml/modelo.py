@@ -1,5 +1,5 @@
 import torch
-from torchvision import transforms
+from torchvision import models, transforms
 
 TRANSFORMACAO = transforms.Compose([
     transforms.Resize(256),
@@ -19,3 +19,9 @@ class Classificador:
         entrada = TRANSFORMACAO(imagem.convert("RGB")).unsqueeze(0)
         probabilidades = torch.softmax(self.rede(entrada), dim=1)[0]
         return dict(zip(self.classes, probabilidades.tolist()))
+
+
+def criar_rede(n_classes: int, pretreinada: bool = True) -> torch.nn.Module:
+    rede = models.efficientnet_b0(weights=models.EfficientNet_B0_Weights.IMAGENET1K_V1 if pretreinada else None)
+    rede.classifier[1] = torch.nn.Linear(rede.classifier[1].in_features, n_classes)
+    return rede
