@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text, create_engine
 
-from app.controllers import auth
+from app.controllers import auth, culturas
 from app.core.config import settings
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
 
@@ -42,6 +42,7 @@ app.add_middleware(
 )
 
 app.include_router(auth.router)
+app.include_router(culturas.router)
 
 
 @app.get("/health", tags=["Health Check"])
