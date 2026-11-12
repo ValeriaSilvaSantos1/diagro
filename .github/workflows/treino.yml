@@ -21,6 +21,8 @@ env:
   DADOS: ${{ github.workspace }}/../dados
   SETHY_URL: https://data.mendeley.com/public-files/datasets/fwcj7stb8r/files/fd8717c4-0d65-4c80-a76c-3b61cb68e80d/file_downloaded
   SETHY_SHA256: b2d5fbef5a8ef6adefa04a83be7ee5150091f412d40162ecdf9fd2b1b5e24aaf
+  BANGLADESH_URL: https://data.mendeley.com/public-files/datasets/hx6f852hw4/files/482181c7-57d6-4710-9f5c-be059ed382ca/file_downloaded
+  BANGLADESH_SHA256: 6c2b3de0c0929465dce86c6d9e24271961fbc251aafe555dcfdd29c6437e3893
 
 jobs:
   treino:
@@ -42,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.DADOS }}
-          key: dados-${{ hashFiles('ml/diagro_ml/preparar.py') }}
+          key: dados-${{ hashFiles('ml/diagro_ml/preparar.py', '.github/workflows/treino.yml') }}
 
       - name: Baixa e prepara o Paddy Doctor
         if: steps.cache.outputs.cache-hit != 'true'
@@ -51,7 +53,7 @@ jobs:
         run: |
           kaggle competitions download -c paddy-disease-classification -p "$RUNNER_TEMP"
           unzip -q "$RUNNER_TEMP/paddy-disease-classification.zip" 'train_images/*' -d "$RUNNER_TEMP/paddy"
-          python -m diagro_ml.preparar "$RUNNER_TEMP/paddy/train_images" "$DADOS/paddy-256"
+          python -m diagro_ml.preparar "$RUNNER_TEMP/paddy/train_images" "$DADOS/treino-256"
 
       - name: Baixa e prepara o Sethy
         if: steps.cache.outputs.cache-hit != 'true'
@@ -59,14 +61,24 @@ jobs:
           curl -fsSL -o "$RUNNER_TEMP/sethy.7z" "$SETHY_URL"
           echo "$SETHY_SHA256  $RUNNER_TEMP/sethy.7z" | sha256sum -c
           python -c "import py7zr, sys; py7zr.SevenZipFile(sys.argv[1]).extractall(sys.argv[2])" "$RUNNER_TEMP/sethy.7z" "$RUNNER_TEMP/sethy"
-          python -m diagro_ml.preparar "$RUNNER_TEMP/sethy/Rice Leaf Disease Images" "$DADOS/sethy-256" \
+          python -m diagro_ml.preparar "$RUNNER_TEMP/sethy/Rice Leaf Disease Images" "$DADOS/treino-256" \
             --mapa '{"Bacterialblight": "bacterial_leaf_blight", "Blast": "blast", "Brownspot": "brown_spot", "Tungro": "tungro"}'
 
-      - run: python -m diagro_ml.treino --dados "$DADOS/paddy-256" --externo "$DADOS/sethy-256" --saida saida --epocas ${{ inputs.epocas || 12 }}
+      - name: Baixa e prepara o Bangladesh
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL -o "$RUNNER_TEMP/bangladesh.zip" "$BANGLADESH_URL"
+          echo "$BANGLADESH_SHA256  $RUNNER_TEMP/bangladesh.zip" | sha256sum -c
+          unzip -q "$RUNNER_TEMP/bangladesh.zip" -d "$RUNNER_TEMP/bangladesh"
+          python -m diagro_ml.preparar "$RUNNER_TEMP/bangladesh/Rice leaf disease" "$DADOS/bangladesh-256" \
+            --mapa '{"Bacterial Leaf Blight": "bacterial_leaf_blight", "Brown Spot": "brown_spot", "Healthy Rice Leaf": "normal", "Leaf Blast": "blast", "Rice Hispa": "hispa", "Leaf scald": "leaf_scald", "Narrow Brown Leaf Spot": "narrow_brown_leaf_spot", "Sheath Blight": "sheath_blight"}'
+
+      - run: python -m diagro_ml.treino --dados "$DADOS/treino-256" --externo "$DADOS/bangladesh-256" --saida saida --epocas ${{ inputs.epocas || 12 }}
 
       - run: pytest -v tests_treino
         env:
-          DIAGRO_DADOS: ${{ env.DADOS }}/paddy-256
+          DIAGRO_DADOS: ${{ env.DADOS }}/treino-256
+          DIAGRO_EXTERNO: ${{ env.DADOS }}/bangladesh-256
           DIAGRO_SAIDA: saida
 
       - uses: actions/upload-artifact@v4
