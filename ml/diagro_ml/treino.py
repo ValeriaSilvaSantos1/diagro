@@ -37,7 +37,7 @@ class Imagens(Dataset):
     def __getitem__(self, i):
         caminho, classe = self.itens[i]
         imagem = Image.open(self.raiz / caminho).convert("RGB")
-        return self.transformacao(imagem), CLASSES.index(classe)
+        return self.transformacao(imagem), CLASSES.index(classe) if classe in CLASSES else -1
 
 
 @torch.no_grad()
@@ -141,14 +141,27 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
 
 
 def avaliar_externo(rede, pasta, lote, indice, corte):
-    """Dataset de outra fonte, com pastas já nomeadas pelas classes do modelo que ele tem."""
+    """Dataset de outra fonte. Pastas com nome de classe do modelo medem acerto; as outras são
+    doenças que o modelo não conhece e medem só quantas o índice marca como fora do padrão."""
     pasta = Path(pasta)
-    itens = [(c.relative_to(pasta).as_posix(), c.parent.name) for c in sorted(pasta.glob("*/*"))]
-    carregador = DataLoader(Imagens(pasta, itens, TRANSFORMACAO), batch_size=lote, num_workers=4)
-    p, y = probabilidades(rede, carregador)
+    todos = [(c.relative_to(pasta).as_posix(), c.parent.name) for c in sorted(pasta.glob("*/*"))]
+
+    def carregador(itens):
+        return DataLoader(Imagens(pasta, itens, TRANSFORMACAO), batch_size=lote, num_workers=4)
+
+    def fora_do_padrao(itens):
+        return float((indice.distancias(vetores(rede, entradas(carregador(itens)))) > corte).mean())
+
+    conhecidas = [item for item in todos if item[1] in CLASSES]
+    desconhecidas = [item for item in todos if item[1] not in CLASSES]
+    p, y = probabilidades(rede, carregador(conhecidas))
     presentes = sorted({int(r) for r in y})
-    fora_do_padrao = float((indice.distancias(vetores(rede, entradas(carregador))) > corte).mean())
-    return {**macro_f1_com_ic(y, p.argmax(1), presentes), "classes": [CLASSES[i] for i in presentes], "fora_do_padrao": fora_do_padrao}
+    resultado = {**macro_f1_com_ic(y, p.argmax(1), presentes), "classes": [CLASSES[i] for i in presentes],
+                 "fora_do_padrao": fora_do_padrao(conhecidas)}
+    if desconhecidas:
+        resultado["desconhecidas"] = {"n": len(desconhecidas), "classes": sorted({c for _, c in desconhecidas}),
+                                      "fora_do_padrao": fora_do_padrao(desconhecidas)}
+    return resultado
 
 
 if __name__ == "__main__":
