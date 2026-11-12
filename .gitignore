@@ -225,3 +225,6 @@ __marimo__/
 
 # graphify
 graphify-out/
+
+# saída local do treino (pesos e métricas vão para o release)
+ml/saida/
