@@ -7,6 +7,7 @@ from sqlalchemy import text, create_engine
 
 from app.controllers import analises, auth, culturas
 from app.core.config import settings
+from app.core.mongo import ping_mongo
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
 
 logger = logging.getLogger("uvicorn.error")
@@ -70,14 +71,11 @@ def health_check():
         health_status["status"] = "alerta"
 
     # Teste de conexão / configuração com o MongoDB
-    try:
-        # Aqui validamos se a URL do Mongo foi montada corretamente
-        if settings.MONGODB_URL:
-            health_status["mongodb"] = "configurado"
-        else:
-            health_status["mongodb"] = "não configurado"
-    except Exception as e:
-        health_status["mongodb"] = f"erro: {str(e)}"
+    if ping_mongo():
+        health_status["mongodb"] = "conectado"
+    else:
+        health_status["mongodb"] = "erro: MongoDB fora do ar ou usuário/senha incorretos"
+        health_status["status"] = "alerta"
 
     # Teste de conexão com o RustFS (o servidor responde e o bucket existe?)
     if ArmazenamentoRepository().esta_disponivel():
