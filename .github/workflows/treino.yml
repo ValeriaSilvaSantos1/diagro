@@ -81,6 +81,7 @@ jobs:
           done
           python -m diagro_ml.preparar "$ORIGEM" "$DADOS/bangladesh-256" \
             --mapa '{"Leaf scald": "leaf_scald", "Narrow Brown Leaf Spot": "narrow_brown_leaf_spot", "Sheath Blight": "sheath_blight"}'
+          python -m diagro_ml.dados "$DADOS/bangladesh-256" "$DADOS/treino-256"
 
       - name: Nenhuma foto do teste do Bangladesh quase igual a uma do treino
         run: pytest -v tests_treino -k 5_11
