@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import {
   ArrowRight,
-  BookOpen,
   Calendar,
   CircleCheck,
   Download,
@@ -26,21 +25,19 @@ import {
 } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
-import { DemoBadge, OutcomeBadge, StatusBadge } from '@/components/common/Badge'
-import { DemoNotice, EmptyState, PageHeader, Skeleton } from '@/components/common/Misc'
+import { OutcomeBadge, StatusBadge } from '@/components/common/Badge'
+import { EmptyState, PageHeader, Skeleton } from '@/components/common/Misc'
 import { ConfirmDialog } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
 import { ScanImage } from '@/components/analysis/ScanOverlay'
 import { useAppStore } from '@/store/AppStore'
-import { catalogById } from '@/lib/demo/catalog'
 import type { Analysis } from '@/types/domain'
 import { analysisReportHtml, downloadFile } from '@/lib/export'
-import { simulateResult } from '@/lib/demo/simulate'
 import { cn, formatDateTime } from '@/lib/format'
 
 export default function AnalysisResult() {
   const { id } = useParams<{ id: string }>()
-  const { analyses, deleteAnalysis, updateAnalysis } = useAppStore()
+  const { analyses, deleteAnalysis } = useAppStore()
   const router = useRouter()
   const toast = useToast()
   const [confirm, setConfirm] = useState(false)
@@ -76,7 +73,7 @@ export default function AnalysisResult() {
               Consultar histórico
             </ButtonLink>
             <Button variant="outline" icon={<Download className="size-4" />} onClick={download} disabled={a.status === 'processing'}>
-              Baixar relatório demonstrativo
+              Baixar relatório
             </Button>
             <ButtonLink href={newHref} icon={<Plus className="size-4" />}>
               Realizar nova análise
@@ -93,23 +90,12 @@ export default function AnalysisResult() {
       </dl>
 
       {a.status === 'processing' ? (
-        <ProcessingState
-          a={a}
-          onComplete={() => {
-            updateAnalysis(a.id, simulateResult('auto', a.cropName))
-            toast({ title: 'Processamento concluído', description: 'Resultado demonstrativo gerado.' })
-          }}
-        />
+        <ProcessingState a={a} />
       ) : a.status === 'inconclusive' ? (
         <InconclusiveState a={a} newHref={newHref} />
       ) : (
         <DoneState a={a} />
       )}
-
-      <DemoNotice>
-        <strong className="font-semibold text-forest">Resultado demonstrativo.</strong> Este protótipo não possui um modelo de IA conectado: classificação, regiões e
-        confiança são exemplos fictícios.
-      </DemoNotice>
 
       <div className="flex justify-end">
         <Button variant="dangerGhost" size="sm" icon={<Trash2 className="size-4" />} onClick={() => setConfirm(true)}>
@@ -185,7 +171,6 @@ function ConfidenceMeter({ value }: { value: number | null }) {
 
 function DoneState({ a }: { a: Analysis }) {
   const [showMarks, setShowMarks] = useState(true)
-  const entry = catalogById(a.catalogId)
   const disease = a.outcome === 'disease'
 
   return (
@@ -217,7 +202,6 @@ function DoneState({ a }: { a: Analysis }) {
         <Card className="p-5 sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Classificação retornada</p>
-            <DemoBadge label="Exemplo fictício" />
           </div>
           <div className="mt-4 flex items-start gap-4">
             <span className={cn('grid size-12 shrink-0 place-items-center rounded-xl', disease ? 'bg-warn-soft text-warn-ink' : 'bg-mint text-agro')}>
@@ -231,11 +215,6 @@ function DoneState({ a }: { a: Analysis }) {
                 <OutcomeBadge outcome={a.outcome} />
                 <span className="text-sm font-semibold text-ink-soft">{a.classification}</span>
               </div>
-              {entry && (
-                <Link href={`/app/catalogo/${entry.id}`} className="mt-2 inline-flex items-center gap-1.5 text-sm font-semibold text-agro hover:underline">
-                  <BookOpen className="size-4" aria-hidden /> Ver “{entry.name}” no catálogo
-                </Link>
-              )}
             </div>
           </div>
 
@@ -293,7 +272,6 @@ function InconclusiveState({ a, newHref }: { a: Analysis; newHref: string }) {
         </span>
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <OutcomeBadge outcome="inconclusive" />
-          <DemoBadge label="Exemplo fictício" />
         </div>
         <h2 className="mt-3 font-display text-2xl font-extrabold leading-tight text-ink">Não foi possível identificar um resultado confiável.</h2>
         <p className="mt-3 leading-relaxed text-ink-soft">
@@ -323,7 +301,7 @@ function InconclusiveState({ a, newHref }: { a: Analysis; newHref: string }) {
   )
 }
 
-function ProcessingState({ a, onComplete }: { a: Analysis; onComplete: () => void }) {
+function ProcessingState({ a }: { a: Analysis }) {
   return (
     <div className="grid gap-6 lg:grid-cols-12">
       <Card className="h-fit overflow-hidden lg:col-span-7">
@@ -337,11 +315,6 @@ function ProcessingState({ a, onComplete }: { a: Analysis; onComplete: () => voi
           <Skeleton className="h-4 w-2/3" />
           <Skeleton className="h-4 w-full" />
           <Skeleton className="h-4 w-5/6" />
-        </div>
-        <div className="mt-auto pt-8">
-          <Button variant="secondary" icon={<ArrowRight className="size-4" />} onClick={onComplete}>
-            Simular conclusão (demonstração)
-          </Button>
         </div>
       </Card>
     </div>

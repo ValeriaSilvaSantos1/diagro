@@ -24,7 +24,6 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <PageHeader
-        eyebrow={<DemoBadge label="Dados demonstrativos" />}
         title={`Olá, ${firstName(user.name)}!`}
         subtitle="Vamos acompanhar a saúde das suas plantas?"
         actions={
