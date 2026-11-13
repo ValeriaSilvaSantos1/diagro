@@ -1,16 +1,17 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Download, RotateCcw, SearchX } from 'lucide-react'
+import { Download, RotateCcw, SearchX, Sheet } from 'lucide-react'
 import { Button } from '@/components/common/Button'
 import { Card, CardHeader } from '@/components/common/Card'
 import { Field, Select } from '@/components/common/Field'
-import { DemoNotice, EmptyState, PageHeader } from '@/components/common/Misc'
+import { EmptyState, PageHeader } from '@/components/common/Misc'
 import { useToast } from '@/components/common/Toast'
 import { CropBarChart, DonutChart, DonutLegend, VolumeBarChart } from '@/components/charts/Charts'
 import { useAppStore } from '@/store/AppStore'
 import { buildSeries, byCrop, distribution, withinDays } from '@/lib/analytics'
 import { analysesCsv, downloadFile } from '@/lib/export'
+import { relatorioPeriodoPdf } from '@/lib/pdf'
 
 const PERIOD_LABEL: Record<string, string> = { '7': 'últimos 7 dias', '30': 'últimos 30 dias', '90': 'últimos 90 dias' }
 
@@ -26,10 +27,26 @@ export default function Reports() {
   const dist = useMemo(() => distribution(filtered), [filtered])
   const crops = useMemo(() => byCrop(filtered), [filtered])
 
-  const exportReport = () => {
+  const [gerando, setGerando] = useState(false)
+  const dia = () => new Date().toISOString().slice(0, 10)
+
+  const exportReport = async () => {
+    setGerando(true)
+    try {
+      const blob = await relatorioPeriodoPdf(filtered, { periodo: PERIOD_LABEL[period], cultura: crop || 'todas' })
+      downloadFile(`relatorio-diagro-${dia()}.pdf`, blob)
+      toast({ title: 'Relatório exportado', description: `PDF gerado com ${filtered.length} ${filtered.length === 1 ? 'análise' : 'análises'}.` })
+    } catch {
+      toast({ title: 'Não foi possível gerar o relatório', description: 'Tente de novo em instantes.', tone: 'error' })
+    } finally {
+      setGerando(false)
+    }
+  }
+
+  const exportCsv = () => {
     const meta = `Período: ${PERIOD_LABEL[period]} · Cultura: ${crop || 'todas'} · ${filtered.length} registros`
-    downloadFile(`relatorio-diagro-demonstrativo-${new Date().toISOString().slice(0, 10)}.csv`, analysesCsv(filtered, meta), 'text/csv;charset=utf-8')
-    toast({ title: 'Relatório demonstrativo exportado', description: 'Arquivo CSV gerado com os dados fictícios filtrados.' })
+    downloadFile(`relatorio-diagro-${dia()}.csv`, analysesCsv(filtered, meta), 'text/csv;charset=utf-8')
+    toast({ title: 'Planilha exportada', description: 'Arquivo CSV com as análises filtradas.' })
   }
 
   const reset = () => {
@@ -43,9 +60,14 @@ export default function Reports() {
         title="Relatórios"
         subtitle="Entenda a evolução das suas análises ao longo do tempo."
         actions={
-          <Button icon={<Download className="size-4" />} onClick={exportReport} disabled={!filtered.length}>
-            Exportar relatório demonstrativo
-          </Button>
+          <>
+            <Button variant="outline" icon={<Sheet className="size-4" />} onClick={exportCsv} disabled={!filtered.length}>
+              Exportar CSV
+            </Button>
+            <Button icon={<Download className="size-4" />} onClick={exportReport} loading={gerando} disabled={!filtered.length}>
+              Exportar relatório em PDF
+            </Button>
+          </>
         }
       />
 
@@ -119,10 +141,6 @@ export default function Reports() {
         </>
       )}
 
-      <DemoNotice>
-        <strong className="font-semibold text-forest">Exportação demonstrativa.</strong> O arquivo é gerado no navegador a partir dos dados fictícios do protótipo e
-        identificado como demonstração.
-      </DemoNotice>
     </div>
   )
 }

@@ -22,7 +22,7 @@ export default function AuthLayout({ children }: { children: ReactNode }) {
           </div>
           <p className="flex items-center gap-2 text-xs text-white/60">
             <ShieldCheck className="size-4" aria-hidden />
-            Protótipo demonstrativo · os dados ficam salvos somente neste navegador
+            Conexão segura · suas análises ficam salvas na sua conta
           </p>
         </div>
       </aside>

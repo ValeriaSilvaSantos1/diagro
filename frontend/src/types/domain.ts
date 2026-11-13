@@ -23,6 +23,10 @@ export interface Analysis {
   property?: string
   notes?: string
   regions: Region[]
+  /** Versão do modelo que fez a inferência. */
+  modelVersion?: string
+  /** Tratamento recomendado no catálogo para a classificação. */
+  treatment?: string
   source: 'seed' | 'upload'
 }
 

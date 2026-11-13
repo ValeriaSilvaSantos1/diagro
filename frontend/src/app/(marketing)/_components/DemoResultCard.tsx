@@ -3,7 +3,7 @@ import { CircleCheck} from "lucide-react";
 
 import { demoResult, hero } from "../_data/content";
 
-// Cartão flutuante com um resultado fictício de análise.
+// Cartão flutuante com um resultado de análise.
 export default function DemoResultCard() {
   return (
     <div className="absolute -bottom-8 -left-3 w-[82%] max-w-75 rounded-2xl border border-line bg-white p-4 shadow-raised sm:-left-10">

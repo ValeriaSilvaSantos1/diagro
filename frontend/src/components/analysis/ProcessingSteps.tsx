@@ -8,7 +8,7 @@ export function ProcessingSteps({ current }: { current: number }) {
   return (
     <div>
       <div className="mb-5 flex items-center justify-between text-sm">
-        <span className="font-semibold text-ink">Progresso da demonstração</span>
+        <span className="font-semibold text-ink">Progresso da análise</span>
         <span className="font-mono text-muted-foreground">{Math.round(progress)}%</span>
       </div>
       <div

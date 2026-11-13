@@ -17,6 +17,12 @@ class UsuarioRepository:
     def buscar_por_id(self, usuario_id: int) -> Usuario | None:
         return self.db.get(Usuario, usuario_id)
 
+    def salvar(self, usuario: Usuario) -> Usuario:
+        self.db.add(usuario)
+        self.db.commit()
+        self.db.refresh(usuario)
+        return usuario
+
     def criar(self, nome: str, email: str, senha_hash: str) -> Usuario:
         usuario = Usuario(nome=nome, email=email, senha_hash=senha_hash)
         self.db.add(usuario)

@@ -4,7 +4,38 @@ export interface AuthUser {
   id: number;
   nome: string;
   email: string;
+  propriedade: string | null;
+  area_propriedade: number | null;
+  culturas_principais: string | null;
   criado_em: string;
+}
+
+/** Campos que o PATCH /auth/me aceita. Só os enviados mudam; `null` apaga os opcionais. */
+export interface PerfilPatch {
+  nome?: string;
+  email?: string;
+  propriedade?: string | null;
+  area_propriedade?: number | null;
+  culturas_principais?: string | null;
+}
+
+/** Converte o usuário da API para o formato do front (área com vírgula, como a pessoa digita). */
+export function usuarioDaApi(usuario: AuthUser) {
+  return {
+    name: usuario.nome,
+    email: usuario.email,
+    property: usuario.propriedade ?? undefined,
+    propertyArea: usuario.area_propriedade == null ? undefined : String(usuario.area_propriedade).replace(".", ","),
+    mainCrops: usuario.culturas_principais ?? undefined,
+  };
+}
+
+export async function atualizarPerfil(dados: PerfilPatch) {
+  return api<AuthUser>("/auth/me", {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados),
+  });
 }
 
 interface TokenResponse {

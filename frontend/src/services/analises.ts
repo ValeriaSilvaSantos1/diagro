@@ -34,6 +34,8 @@ export function mapAnalysis(item: AnalysisApi): Analysis {
     confidence: item.confianca,
     notes: item.observacoes ?? undefined,
     regions: [],
+    modelVersion: item.modelo_versao || undefined,
+    treatment: item.tratamento_recomendado ?? undefined,
     source: 'upload',
   }
 }
