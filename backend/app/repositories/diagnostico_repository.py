@@ -48,3 +48,24 @@ class DiagnosticoRepository:
         self.db.commit()
         self.db.refresh(diagnostico)
         return diagnostico
+
+    def id_da_doenca(self, label_modelo: str) -> int | None:
+        return self.db.scalar(select(DoencaCatalogo.id).where(DoencaCatalogo.label_modelo == label_modelo))
+
+    def registrar_resultado(
+        self,
+        diagnostico: Diagnostico,
+        *,
+        status: str,
+        modelo_versao: str,
+        confianca: float | None,
+        doenca_id: int | None,
+        inferencia_id: str | None,
+    ) -> None:
+        diagnostico.status = status
+        diagnostico.modelo_versao = modelo_versao
+        diagnostico.confianca = confianca
+        diagnostico.doenca_id = doenca_id
+        diagnostico.inferencia_id = inferencia_id
+        self.db.commit()
+        self.db.refresh(diagnostico)
