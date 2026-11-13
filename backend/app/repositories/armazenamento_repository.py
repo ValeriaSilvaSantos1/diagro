@@ -8,8 +8,10 @@ Usamos o boto3, o cliente S3 genérico. Como o RustFS fala o mesmo protocolo da
 Amazon S3, trocar de servidor no futuro é só mudar o S3_ENDPOINT_URL no .env.
 """
 
+import socket
 import uuid
 from datetime import UTC, datetime
+from urllib.parse import urlsplit, urlunsplit
 
 import boto3
 from botocore.client import Config
@@ -24,12 +26,27 @@ class ObjetoNaoEncontrado(Exception):
     pass
 
 
+def endpoint_aceito_pelo_boto3(url: str) -> str:
+    """O boto3 recusa nome de servidor com "_" ("Invalid endpoint"), e o Easypanel dá aos
+    serviços nomes como `projeto_diagro-rustfs`. Nesse caso, troca o nome pelo IP interno,
+    que o boto3 aceita. Se o nome não resolver, devolve a URL como veio."""
+    partes = urlsplit(url)
+    if not partes.hostname or "_" not in partes.hostname:
+        return url
+    try:
+        ip = socket.gethostbyname(partes.hostname)
+    except OSError:
+        return url
+    netloc = f"{ip}:{partes.port}" if partes.port else ip
+    return urlunsplit(partes._replace(netloc=netloc))
+
+
 class ArmazenamentoRepository:
     def __init__(self):
         self.bucket = settings.S3_BUCKET
         self.cliente = boto3.client(
             "s3",
-            endpoint_url=settings.S3_ENDPOINT_URL,
+            endpoint_url=endpoint_aceito_pelo_boto3(settings.S3_ENDPOINT_URL),
             aws_access_key_id=settings.RUSTFS_ACCESS_KEY,
             aws_secret_access_key=settings.RUSTFS_SECRET_KEY.get_secret_value(),
             region_name=settings.S3_REGIAO,
