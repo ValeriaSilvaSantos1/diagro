@@ -55,7 +55,9 @@ def test_5_9_indice_com_todas_as_imagens_de_treino_e_corte_gravado(metricas):
 
 
 def test_5_10_poucas_fotos_do_teste_interno_fora_do_padrao(metricas):
+    # G.4 (13/11): cada grupo de cópias pesa uma vez; a fração por arquivo segue no metricas.json.
     assert metricas["teste"]["fora_do_padrao"] <= 0.07
+    assert 0 <= metricas["teste"]["fora_do_padrao_por_arquivo"] <= 1
 
 
 def test_5_11_nenhuma_foto_do_externo_quase_igual_a_uma_do_treino():

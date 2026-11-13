@@ -11,7 +11,7 @@ from sklearn.metrics import f1_score
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
 
-from diagro_ml.calibracao import META_DE_ACERTO, calibrar_corte, calibrar_limiar
+from diagro_ml.calibracao import META_DE_ACERTO, calibrar_corte, calibrar_limiar, fracao_fora
 from diagro_ml.dados import dividir
 from diagro_ml.indice import Indice
 from diagro_ml.modelo import TRANSFORMACAO, criar_rede, vetores
@@ -35,7 +35,7 @@ class Imagens(Dataset):
         return len(self.itens)
 
     def __getitem__(self, i):
-        caminho, classe = self.itens[i]
+        caminho, classe = self.itens[i][:2]
         imagem = Image.open(self.raiz / caminho).convert("RGB")
         return self.transformacao(imagem), CLASSES.index(classe) if classe in CLASSES else -1
 
@@ -115,13 +115,14 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
     (saida / "validacao.json").write_text(json.dumps({"confiancas": confiancas, "acertos": acertos}))
 
     treino_ordenado = carregador("treino", TRANSFORMACAO)
-    indice = Indice(vetores(rede, entradas(treino_ordenado)), [c for _, c in partes["treino"]], [a for a, _ in partes["treino"]])
+    indice = Indice(vetores(rede, entradas(treino_ordenado)), [item[1] for item in partes["treino"]], [item[0] for item in partes["treino"]])
     indice.salvar(saida / "indice.npz")
-    corte = calibrar_corte(indice.distancias(vetores(rede, entradas(validacao))))
+    corte = calibrar_corte(indice.distancias(vetores(rede, entradas(validacao))), [item[2] for item in partes["validacao"]])
     print(f"índice com {len(indice.vetores)} imagens de treino, corte {corte:.4f}; avaliando o teste", flush=True)
 
     p, y = probabilidades(rede, teste)
     aceitos = p.max(1) >= limiar
+    distancias_teste = indice.distancias(vetores(rede, entradas(teste)))
     metricas = {
         "arquitetura": "efficientnet_b0",
         "epocas": epocas,
@@ -133,7 +134,8 @@ def treinar(dados, saida, externo=None, epocas=12, lote=32, semente=42, limite_p
             **macro_f1_com_ic(y, p.argmax(1), list(range(len(CLASSES)))),
             "cobertura": float(aceitos.mean()),
             "acerto_nos_aceitos": float((p.argmax(1) == y)[aceitos].mean()) if aceitos.any() else None,
-            "fora_do_padrao": float((indice.distancias(vetores(rede, entradas(teste))) > corte).mean()),
+            "fora_do_padrao": fracao_fora(distancias_teste, [item[2] for item in partes["teste"]], corte),
+            "fora_do_padrao_por_arquivo": float((distancias_teste > corte).mean()),
         },
     }
     if externo:
