@@ -101,13 +101,21 @@ o resultado é inconclusivo.
 |---|---|---|---|
 | modelo-2 | Paddy Doctor | 0,967 | Sethy: 0,20 (sem índice, aceitava 92% das fotos com 19% de acerto) |
 | modelo-4 | Paddy Doctor, com o índice | 0,967 | Sethy: 0,20, com 99,5% das fotos marcadas como fora do padrão |
-| modelo-5 | Paddy Doctor + Sethy | 0,964 | Bangladesh: 0,245 |
+| modelo-5 | Paddy Doctor + Sethy | 0,964 | Bangladesh inteiro: 0,245 |
+| **modelo-8 (aprovado)** | Paddy Doctor + Sethy + Training e Validation do Bangladesh | 0,952 | Testing do Bangladesh: 0,823 |
 
-O treino de 12/11 (Paddy Doctor, Sethy e o Training e o Validation do Bangladesh) chegou a 0,952 no
-teste interno e 0,823 no Testing do Bangladesh, mas **não foi publicado**: reprovou no teste 5.10
-(8,4% do teste interno fora do padrão, com teto de 7%). Nele, 58% das fotos de doenças que o modelo
-não conhece passaram pelos dois portões. Como o Bangladesh entrou no treino, o Testing dele deixou
-de ser um teste externo puro.
+O primeiro treino com o Bangladesh (12/11) não foi publicado: reprovou no teste 5.10, com 8,4% do
+teste interno fora do padrão e teto de 7%. A causa foi o sorteio por grupo de cópias, que o Sethy
+tem em poucos grupos grandes (uma foto copiada 44 vezes caiu inteira no teste). Desde 13/11 o corte
+de distância e o 5.10 contam cada grupo uma vez. O modelo-8 é esse retreino: 5,3% do teste interno
+fora do padrão por grupo (11,4% contando arquivo a arquivo, porque o corte ficou mais apertado).
+
+Comparado no mesmo Testing do Bangladesh (231 fotos de doenças conhecidas), o modelo-5 tem macro-F1
+de 0,22 e acerta 41% das fotos que aceita; o modelo-8 aceita 81% e acerta 85% delas. O limite que
+fica: 49% das fotos de doenças que o modelo não conhece (leaf scald, narrow brown leaf spot e sheath
+blight) passam pelos dois portões e recebem um diagnóstico, contra 32% no modelo-5. E, como o
+Bangladesh entrou no treino, o Testing dele é foto inédita de uma fonte já vista, não um teste
+externo puro.
 
 ## Deploy (Easypanel)
 
