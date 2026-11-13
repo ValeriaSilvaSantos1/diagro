@@ -19,7 +19,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
-      - ./database/mongo:/docker-entrypoint-initdb.d:ro
 
   rustfs:
     image: rustfs/rustfs:1.0.4
