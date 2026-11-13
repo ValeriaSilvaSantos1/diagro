@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, ChevronRight, Trash2 } from 'lucide-react'
 import type { Analysis } from '@/types/domain'
 import { cn, formatDate, formatPercent, formatTime } from '@/lib/format'
 import { OutcomeBadge, StatusBadge } from '@/components/common/Badge'
+import { useImagemProtegida } from '@/hooks/useImagemProtegida'
 
 interface Props {
   analyses: Analysis[]
@@ -16,10 +17,11 @@ interface Props {
 const THUMB = { sm: 'size-10', md: 'size-12', lg: 'size-14' }
 
 export function LeafThumb({ src, alt, size = 'md' }: { src: string; alt: string; size?: keyof typeof THUMB }) {
+  const url = useImagemProtegida(src)
   return (
     <div className={cn('relative shrink-0 overflow-hidden rounded-lg bg-mist ring-1 ring-line', THUMB[size])}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} loading="lazy" className="size-full object-cover" />
+      {url && <img src={url} alt={alt} loading="lazy" className="size-full object-cover" />}
     </div>
   )
 }
