@@ -17,7 +17,7 @@ imagens_router = APIRouter(prefix="/imagens", tags=["Imagens"])
 
 
 def _out(row) -> DiagnosticoOut:
-    diagnostico, imagem, cultura, nome_doenca, tratamento = row
+    diagnostico, imagem, cultura, nome_doenca, tratamento, tipo = row
     return DiagnosticoOut(
         id=diagnostico.id,
         imagem_id=diagnostico.imagem_id,
@@ -30,6 +30,7 @@ def _out(row) -> DiagnosticoOut:
         cultura=cultura,
         nome_doenca=nome_doenca,
         tratamento_recomendado=tratamento,
+        tipo=tipo,
         observacoes=diagnostico.observacoes,
         inferencia_id=diagnostico.inferencia_id,
     )

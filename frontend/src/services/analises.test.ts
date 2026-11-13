@@ -16,6 +16,7 @@ function analise(campos: Partial<AnalysisApi>): AnalysisApi {
     nome_doenca: null,
     tratamento_recomendado: null,
     observacoes: null,
+    tipo: null,
     ...campos,
   }
 }
@@ -37,5 +38,20 @@ describe('mapAnalysis (F.1 a F.3, aprovados em 12/11)', () => {
 
   it('F.3 processando fica em processamento', () => {
     expect(mapAnalysis(analise({ status: 'processando' })).status).toBe('processing')
+  })
+})
+
+describe('mapAnalysis (F.4 e F.5, aprovados em 12/11)', () => {
+  it('F.4 concluído com folha sadia abre como sem sinais', () => {
+    const a = mapAnalysis(analise({ status: 'concluido', doenca_id: 1, nome_doenca: 'Folha saudável', confianca: 0.97, tipo: 'sadia' }))
+
+    expect(a.status).toBe('done')
+    expect(a.outcome).toBe('healthy')
+  })
+
+  it.each(['doenca', 'praga'] as const)('F.5 concluído com tipo %s abre como doença', (tipo) => {
+    const a = mapAnalysis(analise({ status: 'concluido', doenca_id: 2, nome_doenca: 'Hispa', confianca: 0.91, tipo }))
+
+    expect(a.outcome).toBe('disease')
   })
 })

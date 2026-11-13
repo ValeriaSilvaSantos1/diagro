@@ -19,3 +19,4 @@ class DoencaCatalogo(Base):
     label_modelo: Mapped[str] = mapped_column(String(80), unique=True)
     nome_comum: Mapped[str] = mapped_column(String(120))
     tratamento_recomendado: Mapped[str | None] = mapped_column(Text)
+    tipo: Mapped[str] = mapped_column(String(10))

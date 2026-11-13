@@ -17,6 +17,7 @@ class DiagnosticoOut(BaseModel):
     cultura: str | None = None
     nome_doenca: str | None = None
     tratamento_recomendado: str | None = None
+    tipo: str | None = None
     observacoes: str | None = None
     inferencia_id: str | None = None
     # Documento da coleção `inferencias` do MongoDB; só vem no detalhe de uma análise.
