@@ -15,11 +15,12 @@ export interface AnalysisApi {
   nome_doenca: string | null
   tratamento_recomendado: string | null
   observacoes: string | null
+  tipo: 'doenca' | 'praga' | 'sadia' | null
 }
 
 export function mapAnalysis(item: AnalysisApi): Analysis {
   const image = item.arquivo_url.startsWith('http') ? item.arquivo_url : `${env.apiUrl}${item.arquivo_url}`
-  const outcome = item.status === 'concluido' ? 'disease' : item.status === 'inconclusivo' ? 'inconclusive' : 'inconclusive'
+  const outcome = item.status !== 'concluido' ? 'inconclusive' : item.tipo === 'sadia' ? 'healthy' : 'disease'
   return {
     id: String(item.id),
     createdAt: item.criado_em,
