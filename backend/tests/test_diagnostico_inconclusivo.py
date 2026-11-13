@@ -69,3 +69,56 @@ def test_1_5_downgrade_e_upgrade_da_0003(alembic_cfg, banco_migrado):
         preparar(conexao)
         inserir(conexao, "inconclusivo", 0.41, INFERENCIA_ID)
         transacao.rollback()
+
+
+@pytest.fixture
+def inconclusivo_gravado(banco_migrado):
+    """Diagnóstico inconclusivo gravado de verdade (sem rollback), para o downgrade encontrá-lo."""
+    with banco_migrado.begin() as conexao:
+        usuario_id = conexao.execute(
+            text("INSERT INTO usuarios (nome, email, senha_hash) VALUES ('Teste', 'downgrade@diagro.dev', 'x') RETURNING id")
+        ).scalar_one()
+        imagem_id = conexao.execute(
+            text("INSERT INTO imagens (usuario_id, arquivo_url) VALUES (:u, 'imagens/downgrade.jpg') RETURNING id"),
+            {"u": usuario_id},
+        ).scalar_one()
+        diagnostico_id = conexao.execute(
+            text(
+                "INSERT INTO diagnosticos (usuario_id, imagem_id, modelo_versao, confianca, status, inferencia_id) "
+                "VALUES (:u, :i, 'teste', 0.41, 'inconclusivo', :inferencia) RETURNING id"
+            ),
+            {"u": usuario_id, "i": imagem_id, "inferencia": INFERENCIA_ID},
+        ).scalar_one()
+    yield diagnostico_id
+    with banco_migrado.begin() as conexao:
+        conexao.execute(text("DELETE FROM usuarios WHERE id = :u"), {"u": usuario_id})
+
+
+def diagnostico(engine, diagnostico_id):
+    with engine.connect() as conexao:
+        return conexao.execute(
+            text("SELECT status, confianca, inferencia_id FROM diagnosticos WHERE id = :id"), {"id": diagnostico_id}
+        ).one()
+
+
+def test_d_1_downgrade_da_0003_converte_inconclusivo_em_erro_sem_perder_confianca_e_inferencia(
+    alembic_cfg, banco_migrado, inconclusivo_gravado
+):
+    try:
+        command.downgrade(alembic_cfg, "0002")
+
+        status, confianca, inferencia_id = diagnostico(banco_migrado, inconclusivo_gravado)
+        assert status == "erro"
+        assert float(confianca) == pytest.approx(0.41)
+        assert inferencia_id == INFERENCIA_ID
+    finally:
+        command.upgrade(alembic_cfg, "head")
+
+
+def test_d_2_upgrade_depois_do_downgrade_funciona_e_a_linha_continua_como_erro(
+    alembic_cfg, banco_migrado, inconclusivo_gravado
+):
+    command.downgrade(alembic_cfg, "0002")
+    command.upgrade(alembic_cfg, "head")
+
+    assert diagnostico(banco_migrado, inconclusivo_gravado).status == "erro"

@@ -31,7 +31,8 @@ def inferencias():
 def cliente(banco_migrado, inferencias):
     ArmazenamentoRepository().garantir_bucket()
     yield TestClient(app)
-    # Diagnóstico inconclusivo deixado no banco impede o downgrade da 0003 em test_migrations.
+    # Diagnóstico concluído aponta para o catálogo pela FK e impede o DELETE do downgrade da 0002
+    # em test_migrations.
     with banco_migrado.begin() as conexao:
         conexao.execute(text("DELETE FROM diagnosticos"))
 
