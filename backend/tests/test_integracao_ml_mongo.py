@@ -175,6 +175,17 @@ def test_i_7_mongo_fora_do_ar_grava_o_diagnostico_com_erro_e_guarda_a_foto(clien
     assert cliente.get(corpo["arquivo_url"], headers=cabecalho).status_code == 200
 
 
+@pytest.mark.parametrize(("label", "vetor", "tipo"), [
+    ("blast", PERTO, "doenca"),
+    ("normal", PERTO, "sadia"),
+    ("blast", LONGE, None),
+])
+def test_t_4_analise_traz_o_tipo_do_catalogo(cliente, com_modelo, label, vetor, tipo):
+    com_modelo(saida(label, 0.90), vetor)
+
+    assert enviar(cliente, entrar(cliente)).json()["tipo"] == tipo
+
+
 def test_i_9_detalhe_traz_a_inferencia_do_mongo_so_para_o_dono(cliente, com_modelo):
     com_modelo(saida("blast", 0.90), PERTO)
     dono = entrar(cliente)

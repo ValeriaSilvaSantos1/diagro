@@ -9,9 +9,12 @@ class DiagnosticoRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def listar(self, usuario_id: int) -> list[tuple[Diagnostico, Imagem, str | None, str | None, str | None]]:
+    def listar(self, usuario_id: int) -> list[tuple[Diagnostico, Imagem, str | None, str | None, str | None, str | None]]:
         query = (
-            select(Diagnostico, Imagem, Cultura.nome, DoencaCatalogo.nome_comum, DoencaCatalogo.tratamento_recomendado)
+            select(
+                Diagnostico, Imagem, Cultura.nome, DoencaCatalogo.nome_comum,
+                DoencaCatalogo.tratamento_recomendado, DoencaCatalogo.tipo,
+            )
             .join(Imagem, Imagem.id == Diagnostico.imagem_id)
             .outerjoin(DoencaCatalogo, DoencaCatalogo.id == Diagnostico.doenca_id)
             .outerjoin(Cultura, Cultura.id == DoencaCatalogo.cultura_id)
@@ -22,7 +25,10 @@ class DiagnosticoRepository:
 
     def buscar(self, usuario_id: int, diagnostico_id: int):
         query = (
-            select(Diagnostico, Imagem, Cultura.nome, DoencaCatalogo.nome_comum, DoencaCatalogo.tratamento_recomendado)
+            select(
+                Diagnostico, Imagem, Cultura.nome, DoencaCatalogo.nome_comum,
+                DoencaCatalogo.tratamento_recomendado, DoencaCatalogo.tipo,
+            )
             .join(Imagem, Imagem.id == Diagnostico.imagem_id)
             .outerjoin(DoencaCatalogo, DoencaCatalogo.id == Diagnostico.doenca_id)
             .outerjoin(Cultura, Cultura.id == DoencaCatalogo.cultura_id)
