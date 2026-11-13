@@ -93,10 +93,16 @@ def health_check():
         health_status["status"] = "alerta"
 
     # Teste de conexão com o RustFS (o servidor responde e o bucket existe?)
-    if ArmazenamentoRepository().esta_disponivel():
+    try:
+        rustfs_ok = ArmazenamentoRepository().esta_disponivel()
+        rustfs_erro = f"erro: RustFS fora do ar ou bucket '{settings.S3_BUCKET}' inexistente"
+    except Exception as e:
+        # Ex.: S3_ENDPOINT_URL inválido. Sem isto, o /health inteiro respondia 500.
+        rustfs_ok, rustfs_erro = False, f"erro: {e}"
+    if rustfs_ok:
         health_status["rustfs"] = "conectado"
     else:
-        health_status["rustfs"] = f"erro: RustFS fora do ar ou bucket '{settings.S3_BUCKET}' inexistente"
+        health_status["rustfs"] = rustfs_erro
         health_status["status"] = "alerta"
 
     classificador = getattr(app.state, "classificador", None)
