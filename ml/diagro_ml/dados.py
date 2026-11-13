@@ -76,7 +76,8 @@ def agrupar(pasta, limiar=LIMIAR_PERCEPTUAL):
 
 def dividir(pasta, semente=42, proporcoes=(0.70, 0.15, 0.15)):
     """Divide pasta/<classe>/<imagem> em treino, validação e teste, estratificado por classe e sem
-    separar fotos do mesmo grupo (ver `agrupar`)."""
+    separar fotos do mesmo grupo (ver `agrupar`). Cada item é (caminho, classe, grupo); o grupo é o
+    primeiro caminho do lote e serve para pesar cada grupo uma vez no corte e no "fora do padrão"."""
     rng = random.Random(semente)
     partes = {"treino": [], "validacao": [], "teste": []}
     for classe, lotes in agrupar(pasta).items():
@@ -85,7 +86,7 @@ def dividir(pasta, semente=42, proporcoes=(0.70, 0.15, 0.15)):
         fim_validacao = fim_treino + round(len(lotes) * proporcoes[1])
         fatias = {"treino": lotes[:fim_treino], "validacao": lotes[fim_treino:fim_validacao], "teste": lotes[fim_validacao:]}
         for nome, fatia in fatias.items():
-            partes[nome] += [(caminho, classe) for lote in fatia for caminho in lote]
+            partes[nome] += [(caminho, classe, lote[0]) for lote in fatia for caminho in lote]
     return partes
 
 

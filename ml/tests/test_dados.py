@@ -38,7 +38,7 @@ def test_5_1_mesma_semente_mesma_divisao(pasta):
 def test_5_2_nenhum_arquivo_identico_em_duas_partes(pasta):
     partes = dividir(pasta, semente=42)
     hashes = {
-        nome: {hashlib.sha256((pasta / caminho).read_bytes()).hexdigest() for caminho, _ in itens}
+        nome: {hashlib.sha256((pasta / caminho).read_bytes()).hexdigest() for caminho, *_ in itens}
         for nome, itens in partes.items()
     }
 
@@ -62,7 +62,7 @@ def test_d2_fotos_diferentes_ficam_longe():
 
 
 def test_d3_original_girada_e_espelhada_caem_na_mesma_parte(pasta):
-    parte_de = {caminho: nome for nome, itens in dividir(pasta, semente=42).items() for caminho, _ in itens}
+    parte_de = {caminho: nome for nome, itens in dividir(pasta, semente=42).items() for caminho, *_ in itens}
 
     for classe in ["blast", "normal", "tungro"]:
         for i in range(3):
