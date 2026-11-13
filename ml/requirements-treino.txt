@@ -1,0 +1,5 @@
+-r requirements.txt
+kaggle==2.2.5
+six==1.17.0
+py7zr==1.1.4
+scikit-learn==1.9.1

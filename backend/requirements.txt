@@ -1,0 +1,17 @@
+fastapi==0.111.0
+uvicorn==0.29.0
+sqlalchemy>=2.1.0,<3.0
+psycopg[binary]
+alembic==1.13.1
+pydantic-settings==2.2.1
+boto3==1.40.70
+passlib[argon2]==1.7.4
+PyJWT==2.10.1
+email-validator==2.2.0
+python-multipart==0.0.20
+pymongo==4.13.2
+pillow==13.0.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.15.0+cpu
+torchvision==0.29.2+cpu
+-e ../ml

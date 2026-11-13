@@ -15,6 +15,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!frontend/src/lib/
 lib64/
 parts/
 sdist/
@@ -218,3 +219,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+.vscode/
+.idea/local.env
+
+# graphify
+graphify-out/
+
+# saída local do treino (pesos e métricas vão para o release)
+ml/saida/
+
+# Modelo baixado do release (ver README)
+/modelo/
