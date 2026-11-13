@@ -29,9 +29,12 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    # Antes da 0003 não existe 'inconclusivo'. Essas linhas viram 'erro' e mantêm a confiança e o
+    # inferencia_id; o status original continua no documento da inferência no Mongo.
     op.execute(
         """
         ALTER TABLE diagnosticos DROP CONSTRAINT ck_diagnosticos_inconclusivo_completo;
+        UPDATE diagnosticos SET status = 'erro' WHERE status = 'inconclusivo';
         ALTER TABLE diagnosticos DROP CONSTRAINT ck_diagnosticos_status;
         ALTER TABLE diagnosticos ADD CONSTRAINT ck_diagnosticos_status
             CHECK (status IN ('pendente', 'processando', 'concluido', 'erro'));
