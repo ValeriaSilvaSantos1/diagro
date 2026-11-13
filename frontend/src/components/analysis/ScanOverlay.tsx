@@ -1,4 +1,7 @@
+'use client'
+
 import type { Region } from '@/types/domain'
+import { useImagemProtegida } from '@/hooks/useImagemProtegida'
 import { cn } from '@/lib/format'
 
 type Tone = 'lime' | 'warn'
@@ -66,10 +69,11 @@ interface ScanImageProps {
 
 /** Photo with computer-vision style overlays (regions of interest, scan line, grid). */
 export function ScanImage({ src, alt, regions = [], tone = 'warn', scanning, grid, className, fit = 'cover' }: ScanImageProps) {
+  const url = useImagemProtegida(src)
   return (
     <div className={cn('relative overflow-hidden bg-forest-deep', className)}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={alt} className={cn('absolute inset-0 size-full', fit === 'cover' ? 'object-cover' : 'object-contain')} />
+      {url && <img src={url} alt={alt} className={cn('absolute inset-0 size-full', fit === 'cover' ? 'object-cover' : 'object-contain')} />}
       {grid && <div className="absolute inset-0 bg-grid opacity-70" aria-hidden />}
       <ViewfinderCorners />
       {regions.map((r, i) => (

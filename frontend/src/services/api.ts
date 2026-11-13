@@ -11,10 +11,14 @@ export class ApiError extends Error {
   }
 }
 
+/** Token do login salvo no navegador, ou null fora dele e sem login. */
+export function lerToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("diagro:token") || sessionStorage.getItem("diagro:token");
+}
+
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const token =
-    typeof window !== "undefined" &&
-    (localStorage.getItem("diagro:token") || sessionStorage.getItem("diagro:token"));
+  const token = lerToken();
   const headers = new Headers(init?.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
 
