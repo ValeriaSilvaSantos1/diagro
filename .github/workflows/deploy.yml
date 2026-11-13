@@ -1,0 +1,26 @@
+name: Deploy
+
+# Atualiza a API e o front no Easypanel quando o CI de um push na main termina verde.
+# As URLs são as "Deployment Trigger" de cada serviço no Easypanel (aba Deployments), guardadas
+# como secrets do repositório: EASYPANEL_DEPLOY_API e EASYPANEL_DEPLOY_FRONT.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  deploy:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: API
+        env:
+          URL: ${{ secrets.EASYPANEL_DEPLOY_API }}
+        run: curl -fsS -X POST "$URL"
+      - name: Front
+        env:
+          URL: ${{ secrets.EASYPANEL_DEPLOY_FRONT }}
+        run: curl -fsS -X POST "$URL"
