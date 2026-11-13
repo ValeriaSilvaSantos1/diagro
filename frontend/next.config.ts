@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // servidor próprio com só as dependências usadas, para a imagem Docker (frontend/Dockerfile)
+  output: "standalone",
   experimental: {
     agentFeedback: true,
   },

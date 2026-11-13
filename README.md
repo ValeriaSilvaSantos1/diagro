@@ -75,10 +75,11 @@ O CI roda os três (`backend`, `ml` e `frontend`) em todo PR e push para a `deve
 ## Modelo
 
 A API classifica as fotos com o modelo publicado nos releases do repositório pelo workflow de treino.
-Para usar o modelo aprovado, baixe o release na raiz do repositório:
+O arquivo `MODELO_APROVADO`, na raiz, diz qual release é o aprovado; é dele que o deploy e o comando
+abaixo leem a tag. Para usar o modelo aprovado, baixe o release na raiz do repositório:
 
 ```bash
-gh release download modelo-5 --repo ValeriaSilvaSantos1/diagro --pattern '*' -D modelo
+gh release download "$(cat MODELO_APROVADO)" --repo ValeriaSilvaSantos1/diagro --pattern '*' -D modelo
 ```
 
 E aponte a variável `MODELO_DIR` do `.env` para essa pasta (o caminho é relativo a `backend/`,
@@ -107,6 +108,25 @@ teste interno e 0,823 no Testing do Bangladesh, mas **não foi publicado**: repr
 (8,4% do teste interno fora do padrão, com teto de 7%). Nele, 58% das fotos de doenças que o modelo
 não conhece passaram pelos dois portões. Como o Bangladesh entrou no treino, o Testing dele deixou
 de ser um teste externo puro.
+
+## Deploy (Easypanel)
+
+A API e o front têm Dockerfile próprio, os dois construídos a partir da raiz do repositório. A API
+sobe com o modelo aprovado dentro da imagem e roda `alembic upgrade head` antes de começar.
+
+| Serviço no Easypanel | Origem | Dockerfile | Variáveis |
+|---|---|---|---|
+| PostgreSQL, MongoDB, RustFS | imagens `postgres:16`, `mongo:7`, `rustfs/rustfs:1.0.4` | (as do `docker-compose.yml`) | usuários e senhas |
+| API | GitHub, branch `main`, Build Path `/` | `backend/Dockerfile` | as do `.env.example` menos `MODELO_DIR`, mais `POSTGRES_SERVER`, `MONGO_SERVER` e `S3_ENDPOINT_URL` com o nome interno de cada serviço, e `CORS_ORIGENS` com a URL pública do front |
+| Front | GitHub, branch `main`, Build Path `/` | `frontend/Dockerfile` | `NEXT_PUBLIC_API_URL` com a URL pública da API (entra no build) |
+
+**Cuidado com espaço no fim das variáveis coladas:** um espaço depois do usuário do MongoDB derruba a
+autenticação, e o `/health` mostra `"mongodb": "erro"`.
+
+**Atualização automática:** quando um push na `main` passa no CI, o workflow `deploy.yml` chama a
+"Deployment Trigger" de cada serviço (aba Deployments do Easypanel). As duas URLs ficam nos secrets
+`EASYPANEL_DEPLOY_API` e `EASYPANEL_DEPLOY_FRONT` do repositório. Para trocar o modelo em produção,
+mude a tag em `MODELO_APROVADO` numa PR; quando ela chega à `main`, a API é reconstruída com ele.
 
 ## Fluxo de trabalho
 
