@@ -10,6 +10,7 @@ from pathlib import Path
 
 os.environ["POSTGRES_DB"] = os.environ.get("POSTGRES_DB_TESTE", "diagro_teste")
 os.environ["S3_BUCKET"] = os.environ.get("S3_BUCKET_TESTE", "diagro-imagens-teste")
+os.environ["MONGO_DB"] = os.environ.get("MONGO_DB_TESTE", "diagro_teste")
 
 import pytest
 from alembic import command

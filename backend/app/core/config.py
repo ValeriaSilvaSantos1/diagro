@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # MongoDB
     MONGO_INITDB_ROOT_USERNAME: str | None = None
     MONGO_INITDB_ROOT_PASSWORD: SecretStr | None = None
+    MONGO_SERVER: str = "localhost"
+    MONGO_PORT: int = 27017
+    MONGO_DB: str = "diagro"
 
     # RustFS
     RUSTFS_ACCESS_KEY: str
@@ -39,8 +42,8 @@ class Settings(BaseSettings):
     @property
     def MONGODB_URL(self) -> str:
         if self.MONGO_INITDB_ROOT_USERNAME and self.MONGO_INITDB_ROOT_PASSWORD:
-            return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD.get_secret_value()}@localhost:27017/"
-        return "mongodb://localhost:27017"
+            return f"mongodb://{self.MONGO_INITDB_ROOT_USERNAME}:{self.MONGO_INITDB_ROOT_PASSWORD.get_secret_value()}@{self.MONGO_SERVER}:{self.MONGO_PORT}/"
+        return f"mongodb://{self.MONGO_SERVER}:{self.MONGO_PORT}/"
 
     model_config = SettingsConfigDict(
         env_file=str(ENV_FILE),
