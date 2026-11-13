@@ -10,6 +10,7 @@ from app.controllers import analises, auth, culturas
 from app.core.config import settings
 from app.core.mongo import ping_mongo
 from app.repositories.armazenamento_repository import ArmazenamentoRepository
+from app.repositories.inferencia_repository import InferenciaRepository
 from app.services.classificador_service import ClassificadorService
 
 logger = logging.getLogger("uvicorn.error")
@@ -18,10 +19,11 @@ logger = logging.getLogger("uvicorn.error")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Roda uma vez quando a API sobe: carrega o modelo de MODELO_DIR e garante que o bucket das
-    imagens existe no RustFS. MODELO_DIR apontando para uma pasta errada impede a subida; sem
-    MODELO_DIR a API sobe sem modelo. Se o RustFS estiver fora do ar, a API sobe mesmo assim e o
-    /health mostra o problema.
+    Roda uma vez quando a API sobe: carrega o modelo de MODELO_DIR, garante que o bucket das
+    imagens existe no RustFS e que a coleção `inferencias` do MongoDB tem o validador e os índices.
+    MODELO_DIR apontando para uma pasta errada impede a subida; sem MODELO_DIR a API sobe sem
+    modelo. Se o RustFS ou o MongoDB estiverem fora do ar, a API sobe mesmo assim e o /health
+    mostra o problema.
     """
     app.state.classificador = ClassificadorService.carregar(Path(settings.MODELO_DIR)) if settings.MODELO_DIR else None
     if app.state.classificador is None:
@@ -31,6 +33,11 @@ async def lifespan(app: FastAPI):
         logger.info("Bucket '%s' pronto no RustFS.", settings.S3_BUCKET)
     except Exception as e:
         logger.warning("Não foi possível preparar o bucket no RustFS: %s", e)
+    try:
+        InferenciaRepository().garantir_colecao()
+        logger.info("Coleção 'inferencias' pronta no MongoDB.")
+    except Exception as e:
+        logger.warning("Não foi possível preparar a coleção 'inferencias' no MongoDB: %s", e)
     yield
 
 
