@@ -2,8 +2,8 @@ from fastapi import APIRouter, HTTPException, status
 
 from app.core.deps import Db, UsuarioAtual
 from app.repositories.usuario_repository import UsuarioRepository
-from app.schemas.usuario import CadastroIn, LoginIn, TokenOut, UsuarioOut
-from app.services.auth_service import AuthService, CredenciaisInvalidas, EmailJaCadastrado
+from app.schemas.usuario import CadastroIn, LoginIn, PerfilIn, TokenOut, UsuarioOut
+from app.services.auth_service import AuthService, CampoObrigatorio, CredenciaisInvalidas, EmailJaCadastrado
 
 router = APIRouter(prefix="/auth", tags=["Autenticação"])
 
@@ -38,3 +38,16 @@ def login(dados: LoginIn, db: Db):
 def eu(usuario: UsuarioAtual):
     """Devolve o usuário dono do token. Exige login (botão Authorize no Swagger)."""
     return usuario
+
+
+@router.patch("/me", response_model=UsuarioOut)
+def editar_perfil(dados: PerfilIn, usuario: UsuarioAtual, db: Db):
+    """Edita nome, e-mail e os dados da propriedade do usuário logado. Só os campos enviados mudam."""
+    try:
+        return _servico(db).atualizar_perfil(usuario, dados)
+    except EmailJaCadastrado:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail já cadastrado") from None
+    except CampoObrigatorio as erro:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=f"O campo {erro} não pode ficar vazio"
+        ) from None

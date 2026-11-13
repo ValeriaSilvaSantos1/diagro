@@ -30,7 +30,8 @@ import { useToast } from '@/components/common/Toast'
 import { ScanImage } from '@/components/analysis/ScanOverlay'
 import { useAppStore } from '@/store/AppStore'
 import type { Analysis } from '@/types/domain'
-import { analysisReportHtml, downloadFile } from '@/lib/export'
+import { downloadFile } from '@/lib/export'
+import { relatorioAnalisePdf } from '@/lib/pdf'
 import { cn, formatDateTime } from '@/lib/format'
 
 export default function AnalysisResult() {
@@ -39,7 +40,8 @@ export default function AnalysisResult() {
   const router = useRouter()
   const toast = useToast()
   const [confirm, setConfirm] = useState(false)
-  const a = analyses.find((x) => x.id === decodeURIComponent(id))
+  const [gerando, setGerando] = useState(false)
+  const a =analyses.find((x) => x.id === decodeURIComponent(id))
 
   if (!a)
     return (
@@ -53,9 +55,16 @@ export default function AnalysisResult() {
       </Card>
     )
 
-  const download = () => {
-    downloadFile(`relatorio-${a.id}-demonstrativo.html`, analysisReportHtml(a), 'text/html;charset=utf-8')
-    toast({ title: 'Relatório demonstrativo baixado', description: 'O arquivo pode ser aberto no navegador ou impresso.' })
+  const download = async () => {
+    setGerando(true)
+    try {
+      downloadFile(`relatorio-diagro-${a.id}.pdf`, await relatorioAnalisePdf(a))
+      toast({ title: 'Relatório baixado', description: 'O PDF tem a foto, o resultado e os dados da análise.' })
+    } catch {
+      toast({ title: 'Não foi possível gerar o relatório', description: 'Tente de novo em instantes.', tone: 'error' })
+    } finally {
+      setGerando(false)
+    }
   }
 
   const newHref = `/app/nova-analise${a.cropId ? `?cultura=${a.cropId}` : ''}`
@@ -70,7 +79,7 @@ export default function AnalysisResult() {
             <ButtonLink href="/app/historico" variant="outline" icon={<History className="size-4" />}>
               Consultar histórico
             </ButtonLink>
-            <Button variant="outline" icon={<Download className="size-4" />} onClick={download} disabled={a.status === 'processing'}>
+            <Button variant="outline" icon={<Download className="size-4" />} onClick={download} loading={gerando} disabled={a.status === 'processing'}>
               Baixar relatório
             </Button>
             <ButtonLink href={newHref} icon={<Plus className="size-4" />}>
@@ -146,7 +155,7 @@ function ConfidenceMeter({ value }: { value: number | null }) {
       <div className="flex items-end justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-ink">Confiança informada pelo modelo</p>
-          <p className="text-xs text-muted-foreground">Confiança {level} · valor ilustrativo</p>
+          <p className="text-xs text-muted-foreground">Confiança {level}</p>
         </div>
         <span className="font-display text-3xl font-extrabold text-ink">{value == null ? '—' : `${pct}%`}</span>
       </div>
@@ -181,7 +190,7 @@ function DoneState({ a }: { a: Analysis }) {
             <p className="text-ink-soft">
               {a.regions.length ? (
                 <>
-                  <strong className="font-semibold text-ink">{a.regions.length} regiões de interesse</strong> (ilustrativas): áreas que influenciaram a classificação.
+                  <strong className="font-semibold text-ink">{a.regions.length} regiões de interesse</strong>: áreas que influenciaram a classificação.
                 </>
               ) : (
                 'Nenhuma região de interesse destacada nesta imagem.'

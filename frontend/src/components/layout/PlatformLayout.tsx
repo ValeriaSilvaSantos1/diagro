@@ -11,7 +11,7 @@ import { MAIN_NAV } from './nav'
 import { consumeUserSignOut, useAppStore } from '@/store/AppStore'
 import { useToast } from '@/components/common/Toast'
 import { ApiError } from '@/services/api'
-import { getCurrentUser } from '@/services/auth'
+import { getCurrentUser, usuarioDaApi } from '@/services/auth'
 import { cn } from '@/lib/format'
 
 export function PlatformLayout({ children }: { children: ReactNode }) {
@@ -33,7 +33,7 @@ export function PlatformLayout({ children }: { children: ReactNode }) {
     getCurrentUser()
       .then((usuario) => {
         if (cancelled) return
-        updateUser({ name: usuario.nome, email: usuario.email })
+        updateUser(usuarioDaApi(usuario))
         setSessionChecked(true)
       })
       .catch((error: unknown) => {

@@ -35,7 +35,7 @@ async def lifespan(app: FastAPI):
         logger.warning("Não foi possível preparar o bucket no RustFS: %s", e)
     try:
         InferenciaRepository().garantir_colecao()
-        logger.info("Coleção 'inferencias' pronta no MongoDB.")
+        logger.info("Coleção 'inferencias' pronta no MongoDB.")   
     except Exception as e:
         logger.warning("Não foi possível preparar a coleção 'inferencias' no MongoDB: %s", e)
     yield

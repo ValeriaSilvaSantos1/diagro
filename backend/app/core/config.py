@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     JWT_EXPIRA_MINUTOS: int = 30
 
     # Origens do front que podem chamar a API pelo navegador, em JSON: ["https://diagro.exemplo"]
-    CORS_ORIGENS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]
+    CORS_ORIGENS: list[str] = ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001", "http://127.0.0.1:3001"]
 
     # Modelo: pasta com os arquivos de um release do treino (pesos.pt, indice.npz, classes.json, metricas.json)
     MODELO_DIR: str | None = None

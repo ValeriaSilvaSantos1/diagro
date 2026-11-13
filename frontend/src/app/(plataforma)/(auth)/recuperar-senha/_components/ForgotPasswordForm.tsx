@@ -38,8 +38,8 @@ export default function ForgotPassword() {
           </div>
           <h1 className="mt-6 text-3xl font-extrabold text-ink">Solicitação registrada</h1>
           <p className="mt-3 leading-relaxed text-muted-foreground">
-            Este é um fluxo demonstrativo: <strong className="font-semibold text-ink">nenhum e-mail foi enviado</strong>. Em uma versão com backend, um link de
-            redefinição seria enviado para <strong className="font-semibold text-ink">{email}</strong>.
+            A redefinição de senha por e-mail ainda não está disponível, por isso <strong className="font-semibold text-ink">nenhum e-mail foi enviado</strong> para{' '}
+            <strong className="font-semibold text-ink">{email}</strong>. Procure o administrador do DiAgro para redefinir sua senha.
           </p>
           <div className="mt-8 flex flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={() => setSent(false)}>

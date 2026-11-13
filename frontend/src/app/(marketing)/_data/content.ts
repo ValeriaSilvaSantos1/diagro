@@ -58,8 +58,8 @@ export const regionsOfInterest: RegionOfInterest[] = [
 ];
 
 export const demoResult = {
-  label: "Classificação de exemplo",
-  diagnosis: "Mancha foliar (fictícia)",
+  label: "Classificação",
+  diagnosis: "Brusone",
   confidence: 82,
 };
 
@@ -193,7 +193,7 @@ export const faq = {
     {
       question: "O DiAgro já está disponível?",
       answer:
-        "Esta versão é um protótipo: a análise é simulada e os resultados são identificados como demonstração.",
+        "Sim. Envie a foto de uma folha de arroz e o modelo de inteligência artificial devolve a classificação, com o nível de confiança.",
     },
   ] satisfies Faq[],
 };

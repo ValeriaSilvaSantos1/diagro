@@ -1,4 +1,5 @@
 # diagro
+
 Detecção de doenças em plantas via imagem, com persistência poliglota (PostgreSQL + MongoDB).
 A primeira cultura é o arroz: o usuário envia a foto de uma folha e recebe a doença, a praga ou
 a folha sadia que o modelo identificou, ou um resultado inconclusivo quando a foto foge do que o
@@ -6,11 +7,12 @@ modelo conhece.
 
 ## O que mora onde
 
-| Onde | O que guarda | Por quê |
-|---|---|---|
-| PostgreSQL | usuários, culturas, catálogo (`doencas_catalogo`, com o `tipo` doença, praga ou sadia), metadados das imagens e diagnósticos | dados com relação e restrição: um diagnóstico concluído precisa de doença, confiança e inferência |
-| MongoDB | coleção `inferencias`: o resultado bruto de cada inferência (probabilidades, limiar, distância, corte, vizinhos, tempo) | o formato do `resultado` muda com o tipo de modelo (classificação, detecção, segmentação) |
-| RustFS (compatível com S3) | os arquivos das fotos | nenhuma imagem fica no PostgreSQL nem no MongoDB |
+
+| Onde                        | O que guarda                                                                                                                     | Por quê                                                                                                   |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| PostgreSQL                  | usuários, culturas, catálogo (`doencas_catalogo`, com o `tipo` doença, praga ou sadia), metadados das imagens e diagnósticos | dados com relação e restrição: um diagnóstico concluído precisa de doença, confiança e inferência |
+| MongoDB                     | coleção`inferencias`: o resultado bruto de cada inferência (probabilidades, limiar, distância, corte, vizinhos, tempo)       | o formato do`resultado` muda com o tipo de modelo (classificação, detecção, segmentação)             |
+| RustFS (compatível com S3) | os arquivos das fotos                                                                                                            | nenhuma imagem fica no PostgreSQL nem no MongoDB                                                           |
 
 Os dois bancos se ligam pelos dois lados: `diagnosticos.inferencia_id` guarda o `_id` do documento,
 e o documento guarda o `diagnostico_id`. O validador e os índices da coleção `inferencias` são
@@ -33,7 +35,6 @@ Precisa de Docker, Python 3.13 e Node.js.
    ```bash
    docker compose up -d
    ```
-
 3. Prepare o backend e aplique as migrations:
 
    ```bash
@@ -45,7 +46,6 @@ Precisa de Docker, Python 3.13 e Node.js.
 
    **Rode o `alembic upgrade head` de novo sempre que puxar uma migration nova** (pasta
    `backend/migrations/versions/`). Sem isso, as rotas que usam a coluna nova dão erro 500.
-
 4. Baixe o modelo (seção abaixo) e suba a API, de dentro de `backend/`:
 
    ```bash
@@ -53,7 +53,6 @@ Precisa de Docker, Python 3.13 e Node.js.
    ```
 
    O `http://localhost:8000/health` mostra se PostgreSQL, MongoDB, RustFS e o modelo estão de pé.
-
 5. Suba o front (detalhes em `frontend/README.md`):
 
    ```bash
@@ -64,11 +63,12 @@ Precisa de Docker, Python 3.13 e Node.js.
 
 ## Testes
 
-| Parte | Comando | Observação |
-|---|---|---|
-| backend | `cd backend && .venv/bin/pytest` | precisa do `docker compose up -d`; usa o banco `diagro_teste`, o bucket `diagro-imagens-teste` e o banco `diagro_teste` do MongoDB, nunca os de desenvolvimento |
-| ml | `cd ml && pytest` | testes do pacote `diagro_ml` |
-| front | `cd frontend && npm test` | Vitest |
+
+| Parte   | Comando                          | Observação                                                                                                                                                   |
+| ------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| backend | `cd backend && .venv/bin/pytest` | precisa do`docker compose up -d`; usa o banco `diagro_teste`, o bucket `diagro-imagens-teste` e o banco `diagro_teste` do MongoDB, nunca os de desenvolvimento |
+| ml      | `cd ml && pytest`                | testes do pacote`diagro_ml`                                                                                                                                    |
+| front   | `cd frontend && npm test`        | Vitest                                                                                                                                                         |
 
 O CI roda os três (`backend`, `ml` e `frontend`) em todo PR e push para a `development` e a `main`.
 
@@ -97,12 +97,13 @@ O modelo é uma EfficientNet-B0 com dois portões: só conclui quando a confian�
 calibrado e a foto está perto das imagens de treino (distância a um índice de vetores). Fora disso,
 o resultado é inconclusivo.
 
-| Release | Treino | Teste interno (macro-F1) | Teste externo |
-|---|---|---|---|
-| modelo-2 | Paddy Doctor | 0,967 | Sethy: 0,20 (sem índice, aceitava 92% das fotos com 19% de acerto) |
-| modelo-4 | Paddy Doctor, com o índice | 0,967 | Sethy: 0,20, com 99,5% das fotos marcadas como fora do padrão |
-| modelo-5 | Paddy Doctor + Sethy | 0,964 | Bangladesh inteiro: 0,245 |
-| **modelo-8 (aprovado)** | Paddy Doctor + Sethy + Training e Validation do Bangladesh | 0,952 | Testing do Bangladesh: 0,823 |
+
+| Release                 | Treino                                                     | Teste interno (macro-F1) | Teste externo                                                       |
+| ----------------------- | ---------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| modelo-2                | Paddy Doctor                                               | 0,967                    | Sethy: 0,20 (sem índice, aceitava 92% das fotos com 19% de acerto) |
+| modelo-4                | Paddy Doctor, com o índice                                | 0,967                    | Sethy: 0,20, com 99,5% das fotos marcadas como fora do padrão      |
+| modelo-5                | Paddy Doctor + Sethy                                       | 0,964                    | Bangladesh inteiro: 0,245                                           |
+| **modelo-8 (aprovado)** | Paddy Doctor + Sethy + Training e Validation do Bangladesh | 0,952                    | Testing do Bangladesh: 0,823                                        |
 
 O primeiro treino com o Bangladesh (12/11) não foi publicado: reprovou no teste 5.10, com 8,4% do
 teste interno fora do padrão e teto de 7%. A causa foi o sorteio por grupo de cópias, que o Sethy
@@ -122,11 +123,12 @@ externo puro.
 A API e o front têm Dockerfile próprio, os dois construídos a partir da raiz do repositório. A API
 sobe com o modelo aprovado dentro da imagem e roda `alembic upgrade head` antes de começar.
 
-| Serviço no Easypanel | Origem | Dockerfile | Variáveis |
-|---|---|---|---|
-| PostgreSQL, MongoDB, RustFS | imagens `postgres:16`, `mongo:7`, `rustfs/rustfs:1.0.4` | (as do `docker-compose.yml`) | usuários e senhas |
-| API | GitHub, branch `main`, Build Path `/` | `backend/Dockerfile` | as do `.env.example` menos `MODELO_DIR`, mais `POSTGRES_SERVER`, `MONGO_SERVER` e `S3_ENDPOINT_URL` com o nome interno de cada serviço, e `CORS_ORIGENS` com a URL pública do front |
-| Front | GitHub, branch `main`, Build Path `/` | `frontend/Dockerfile` | `NEXT_PUBLIC_API_URL` com a URL pública da API (entra no build) |
+
+| Serviço no Easypanel       | Origem                                                 | Dockerfile                  | Variáveis                                                                                                                                                                           |
+| --------------------------- | ------------------------------------------------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| PostgreSQL, MongoDB, RustFS | imagens`postgres:16`, `mongo:7`, `rustfs/rustfs:1.0.4` | (as do`docker-compose.yml`) | usuários e senhas                                                                                                                                                                   |
+| API                         | GitHub, branch`main`, Build Path `/`                   | `backend/Dockerfile`        | as do`.env.example` menos `MODELO_DIR`, mais `POSTGRES_SERVER`, `MONGO_SERVER` e `S3_ENDPOINT_URL` com o nome interno de cada serviço, e `CORS_ORIGENS` com a URL pública do front |
+| Front                       | GitHub, branch`main`, Build Path `/`                   | `frontend/Dockerfile`       | `NEXT_PUBLIC_API_URL` com a URL pública da API (entra no build)                                                                                                                     |
 
 **Cuidado com espaço no fim das variáveis coladas:** um espaço depois do usuário do MongoDB derruba a
 autenticação, e o `/health` mostra `"mongodb": "erro"`.

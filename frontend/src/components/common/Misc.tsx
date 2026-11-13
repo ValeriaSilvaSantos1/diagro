@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { FlaskConical } from 'lucide-react'
+import { Info } from 'lucide-react'
 import { cn } from '@/lib/format'
 
 export function PageHeader({ title, subtitle, actions, eyebrow }: { title: ReactNode; subtitle?: string; actions?: ReactNode; eyebrow?: ReactNode }) {
@@ -38,7 +38,7 @@ export function Skeleton({ className }: { className?: string }) {
 export function DemoNotice({ children, className }: { children?: ReactNode; className?: string }) {
   return (
     <div className={cn('flex items-start gap-3 rounded-xl border border-dashed border-agro/35 bg-mint/50 px-4 py-3 text-sm text-ink-soft', className)}>
-      <FlaskConical className="mt-0.5 size-4 shrink-0 text-agro" aria-hidden />
+      <Info className="mt-0.5 size-4 shrink-0 text-agro" aria-hidden />
       <p>
         {children ?? (
           <>

@@ -2,12 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { CloudOff, FlaskConical, Inbox, Plus, RotateCcw, Search, SearchX } from 'lucide-react'
+import { CloudOff, Inbox, Plus, RotateCcw, Search, SearchX } from 'lucide-react'
 import { Button, ButtonLink } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
 import { Field, Input, Select } from '@/components/common/Field'
 import { EmptyState, PageHeader, Skeleton } from '@/components/common/Misc'
-import { Dropdown, MenuItem } from '@/components/common/Dropdown'
 import { ConfirmDialog } from '@/components/common/Modal'
 import { Pagination } from '@/components/common/Pagination'
 import { useToast } from '@/components/common/Toast'
@@ -45,7 +44,7 @@ export default function History() {
   // Referência para os períodos "últimos N dias" (fixada ao abrir a tela).
   const [now] = useState(() => Date.now())
 
-  // Simulated latency to demonstrate the loading state.
+  // Breve estado de carregamento ao abrir a tela.
   useEffect(() => {
     if (view !== 'loading') return
     const t = window.setTimeout(() => setView('ready'), 600)
@@ -149,25 +148,6 @@ export default function History() {
             <Button variant="ghost" size="sm" icon={<RotateCcw className="size-4" />} onClick={clear} disabled={!hasFilters}>
               Limpar filtros
             </Button>
-            <Dropdown
-              label="Simular estados da interface"
-              buttonClassName="inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-muted-foreground transition hover:bg-mist hover:text-ink"
-              button={
-                <>
-                  <FlaskConical className="size-4" /> <span className="hidden sm:inline">Estados</span>
-                </>
-              }
-            >
-              {(close) => (
-                <>
-                  <p className="px-3 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Demonstração</p>
-                  <MenuItem onClick={() => (close(), setView('loading'))}>Simular carregamento</MenuItem>
-                  <MenuItem onClick={() => (close(), setView('error'))}>Simular erro</MenuItem>
-                  <MenuItem onClick={() => (close(), setView('empty'))}>Simular conta sem análises</MenuItem>
-                  <MenuItem onClick={() => (close(), setView('ready'))}>Voltar ao normal</MenuItem>
-                </>
-              )}
-            </Dropdown>
           </div>
         </div>
       </Card>
@@ -190,7 +170,7 @@ export default function History() {
           <EmptyState
             icon={<CloudOff className="size-7" />}
             title="Não foi possível carregar o histórico"
-            description="Verifique sua conexão e tente novamente. (Estado simulado para demonstração.)"
+            description="Verifique sua conexão e tente novamente."
             action={
               <Button onClick={() => setView('loading')} icon={<RotateCcw className="size-4" />}>
                 Tentar novamente

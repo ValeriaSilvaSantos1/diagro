@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation'
 import { ArrowLeft, BookMarked, CircleDot, History, SearchX, ShieldAlert } from 'lucide-react'
 import { ButtonLink } from '@/components/common/Button'
 import { Card } from '@/components/common/Card'
-import { DemoBadge } from '@/components/common/Badge'
 import { EmptyState } from '@/components/common/Misc'
 import { catalogById } from '@/lib/demo/catalog'
 import { useAppStore } from '@/store/AppStore'
@@ -41,8 +40,7 @@ export default function CatalogDetail() {
 
         <div className="space-y-6 lg:col-span-7">
           <Card className="p-6 sm:p-8">
-            <DemoBadge label="Conteúdo demonstrativo" />
-            <h1 className="mt-3 text-3xl font-extrabold text-ink">{entry.name}</h1>
+            <h1 className="text-3xl font-extrabold text-ink">{entry.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               Agente associado (referência geral): <em>{entry.agent}</em>
             </p>
@@ -79,7 +77,7 @@ export default function CatalogDetail() {
               <BookMarked className="size-5 text-agro" aria-hidden />
               <h3 className="mt-3 font-bold text-ink">Referências informativas</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Nenhuma fonte foi vinculada neste protótipo. O conteúdo deve ser revisado e referenciado por especialistas antes do uso real.
+                Esta ficha traz uma descrição geral. Para confirmar o diagnóstico, consulte um especialista.
               </p>
             </Card>
           </div>
@@ -91,7 +89,7 @@ export default function CatalogDetail() {
               </span>
               <div>
                 <p className="font-semibold text-ink">{related} análises no seu histórico</p>
-                <p className="text-sm text-muted-foreground">com esta classificação (exemplos)</p>
+                <p className="text-sm text-muted-foreground">com esta classificação</p>
               </div>
             </div>
             <ButtonLink href={`/app/historico?q=${encodeURIComponent(entry.name)}`} variant="outline" size="sm">
